@@ -23,6 +23,6 @@ def get_cross_matrix(vec: ndarray) -> ndarray:
             [-vec[1], vec[0], 0]])
 
     # TODO replace this with your own code
-    S = solution.cross_matrix.get_cross_matrix(vec)
+    # S = solution.cross_matrix.get_cross_matrix(vec)
 
     return S
