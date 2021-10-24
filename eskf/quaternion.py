@@ -139,8 +139,17 @@ class RotationQuaterion:
             euler (ndarray[3]): extrinsic xyz euler angles (roll, pitch, yaw)
         """
 
+        # equation 10.38
+        mu = self.real_part
+        eps1, eps2, eps3 = self.vec_part
+        phi = np.arctan2(2*(eps3*eps2 + mu*eps1), mu**2 - eps1**2 - eps2**2 + eps3**2)
+        theta = np.arcsin( 2*(mu*eps2 - eps1*eps3)) 
+        psi = np.arctan2(2*(eps1*eps2 + mu*eps3), mu**2 + eps1**2 - eps2**2 - eps3**2)
+
+        euler = np.array([phi, theta, psi])
+
         # TODO replace this with your own code
-        euler = solution.quaternion.RotationQuaterion.as_euler(self)
+        # euler = solution.quaternion.RotationQuaterion.as_euler(self)
 
         return euler
 
@@ -150,6 +159,7 @@ class RotationQuaterion:
         Returns:
             euler (ndarray[3]): extrinsic xyz euler angles (roll, pitch, yaw)
         """
+        avec = self.as_euler()
 
         # TODO replace this with your own code
         avec = solution.quaternion.RotationQuaterion.as_avec(self)
