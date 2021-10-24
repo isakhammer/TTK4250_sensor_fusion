@@ -2,6 +2,7 @@ import numpy as np
 from numpy import ndarray
 from dataclasses import dataclass
 from scipy.spatial.transform import Rotation
+from cross_matrix import get_cross_matrix
 
 from config import DEBUG
 
@@ -50,17 +51,35 @@ class RotationQuaterion:
             quaternion_product (RotationQuaternion): the product
         """
 
-        # TODO replace this with your own code
-        quaternion_product = solution.quaternion.RotationQuaterion.multiply(
-            self, other)
+
+
+        # equation 10.34
+        I = np.identity(4)
+        S = get_cross_matrix(self.vec_part)
+        eps = self.vec_part.reshape(-1,1) #shape (3,1)
+        A = np.block([
+            [np.array([0]), eps.T ],
+            [eps, S ]
+        ])
+        # q_product2 = ( self.real_part*I + A) @ (np.append(other.real_part,  other.vec_part))
+        q_product = np.dot( self.real_part*I + A, np.append(other.real_part, other.vec_part))
+        quaternion_product = RotationQuaterion(q_product[0], q_product[1:])
+
+        # TODO: remove when test is good
+        quaternion_product = solution.quaternion.RotationQuaterion.multiply(self,other)
 
         return quaternion_product
 
     def conjugate(self) -> 'RotationQuaterion':
         """Get the conjugate of the RotationQuaternion"""
 
+        # using equation 10.27
+        qstar = np.append(self.real_part,-self.vec_part) 
+
+        q_conj = qstar/np.linalg.norm(qstar, ord=2) 
+        conj = RotationQuaterion(q_conj[0], q_conj[1:])
         # TODO replace this with your own code
-        conj = solution.quaternion.RotationQuaterion.conjugate(self)
+        # conj = solution.quaternion.RotationQuaterion.conjugate(self)
 
         return conj
 
