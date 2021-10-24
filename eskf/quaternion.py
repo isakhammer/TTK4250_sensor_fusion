@@ -90,13 +90,14 @@ class RotationQuaterion:
             R (ndarray[3,3]): rotation matrix
         """
 
-        mu = self.real_part
-        eps1, eps2, eps3 = self.vec_part
 
         # equation 10.38
-        phi = np.arctan2(2*(eps3*eps2 + mu*eps1), mu**2 - eps1**2 - eps2**2 + eps3**2)
-        theta = np.arcsin( 2*(mu*eps2 - eps1*eps3)) 
-        psi = np.arctan2(2*(eps1*eps2 + mu*eps3), mu**2 + eps1**2 - eps2**2 - eps3**2)
+        phi, theta, psi = self.as_euler()
+        # mu = self.real_part
+        # eps1, eps2, eps3 = self.vec_part
+        # phi = np.arctan2(2*(eps3*eps2 + mu*eps1), mu**2 - eps1**2 - eps2**2 + eps3**2)
+        # theta = np.arcsin( 2*(mu*eps2 - eps1*eps3)) 
+        # psi = np.arctan2(2*(eps1*eps2 + mu*eps3), mu**2 + eps1**2 - eps2**2 - eps3**2)
 
         # equation 10.18
         R_phi = np.array([
