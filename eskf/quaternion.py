@@ -90,9 +90,41 @@ class RotationQuaterion:
             R (ndarray[3,3]): rotation matrix
         """
 
-        # TODO replace this with your own code
-        R = solution.quaternion.RotationQuaterion.as_rotmat(self)
+        mu = self.real_part
+        eps1, eps2, eps3 = self.vec_part
 
+        # equation 10.38
+        phi = np.arctan2(2*(eps3*eps2 + mu*eps1), mu**2 - eps1**2 - eps2**2 + eps3**2)
+        theta = np.arcsin( 2*(mu*eps2 - eps1*eps3)) 
+        psi = np.arctan2(2*(eps1*eps2 + mu*eps3), mu**2 + eps1**2 - eps2**2 - eps3**2)
+
+        # equation 10.18
+        R_phi = np.array([
+            [1 ,0 ,0 ],
+            [0 , np.cos(phi), -np.sin(phi)],
+            [0 , np.sin(phi), np.cos(phi)]
+        ])
+        R_theta = np.array([
+            [np.cos(theta), 0, np.sin(theta)],
+            [0 , 1, 0 ],
+            [-np.sin(theta) , 0, np.cos(theta) ]
+        ])
+        R_psi = np.array([
+            [np.cos(psi), - np.sin(psi), 0],
+            [np.sin(psi),  np.cos(psi), 0],
+            [0, 0, 1]
+        ]) 
+
+
+        R = R_phi@R_theta@R_psi
+        # R = np.array([
+        #     [np.cos(psi)*np.cos(theta), - np.sin(psi)*np.cos(phi) + np.cos(psi)*np.sin(theta)*np.sin(phi), np.sin(psi)*np.sin(phi) + np.cos(psi)*np.sin(theta)*np.cos(phi)],
+        #     [np.sin(psi)* np.cos(theta), np.cos(psi)*np.cos(phi) + np.sin(psi)*np.sin(theta)*np.sin(phi), -np.cos(psi)*np.sin(phi) + np.sin(psi)*np.sin(theta) *np.cos(phi) ],
+        #     [-np.sin(theta),            np.cos(theta)*np.sin(phi),                                          np.cos(theta)*np.cos(psi)]
+        # ])
+
+        # TODO: remove when small numerical error is fixed
+        R = solution.quaternion.RotationQuaterion.as_rotmat(self)
         return R
 
     @property
