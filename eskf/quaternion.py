@@ -58,7 +58,7 @@ class RotationQuaterion:
         S = get_cross_matrix(self.vec_part)
         eps = self.vec_part.reshape(-1,1) #shape (3,1)
         A = np.block([
-            [np.array([0]), eps.T ],
+            [np.array([0]),- eps.T ],
             [eps, S ]
         ])
         # q_product2 = ( self.real_part*I + A) @ (np.append(other.real_part,  other.vec_part))
@@ -66,7 +66,7 @@ class RotationQuaterion:
         quaternion_product = RotationQuaterion(q_product[0], q_product[1:])
 
         # TODO: remove when test is good
-        quaternion_product = solution.quaternion.RotationQuaterion.multiply(self,other)
+        # quaternion_product = solution.quaternion.RotationQuaterion.multiply(self,other)
 
         return quaternion_product
 
@@ -93,11 +93,6 @@ class RotationQuaterion:
 
         # equation 10.38
         phi, theta, psi = self.as_euler()
-        # mu = self.real_part
-        # eps1, eps2, eps3 = self.vec_part
-        # phi = np.arctan2(2*(eps3*eps2 + mu*eps1), mu**2 - eps1**2 - eps2**2 + eps3**2)
-        # theta = np.arcsin( 2*(mu*eps2 - eps1*eps3)) 
-        # psi = np.arctan2(2*(eps1*eps2 + mu*eps3), mu**2 + eps1**2 - eps2**2 - eps3**2)
 
         # equation 10.18
         R_phi = np.array([
@@ -116,16 +111,10 @@ class RotationQuaterion:
             [0, 0, 1]
         ]) 
 
-
-        R = R_phi@R_theta@R_psi
-        # R = np.array([
-        #     [np.cos(psi)*np.cos(theta), - np.sin(psi)*np.cos(phi) + np.cos(psi)*np.sin(theta)*np.sin(phi), np.sin(psi)*np.sin(phi) + np.cos(psi)*np.sin(theta)*np.cos(phi)],
-        #     [np.sin(psi)* np.cos(theta), np.cos(psi)*np.cos(phi) + np.sin(psi)*np.sin(theta)*np.sin(phi), -np.cos(psi)*np.sin(phi) + np.sin(psi)*np.sin(theta) *np.cos(phi) ],
-        #     [-np.sin(theta),            np.cos(theta)*np.sin(phi),                                          np.cos(theta)*np.cos(psi)]
-        # ])
+        R = R_psi@R_theta@R_phi
 
         # TODO: remove when small numerical error is fixed
-        R = solution.quaternion.RotationQuaterion.as_rotmat(self)
+        # R = solution.quaternion.RotationQuaterion.as_rotmat(self)
         return R
 
     @property
@@ -162,7 +151,7 @@ class RotationQuaterion:
         avec = self.as_euler()
 
         # TODO replace this with your own code
-        avec = solution.quaternion.RotationQuaterion.as_avec(self)
+        # avec = solution.quaternion.RotationQuaterion.as_avec(self)
 
         return avec
 
