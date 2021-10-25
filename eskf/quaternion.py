@@ -89,8 +89,6 @@ class RotationQuaterion:
         Returns:
             R (ndarray[3,3]): rotation matrix
         """
-
-
         # equation 10.38
         phi, theta, psi = self.as_euler()
 
@@ -148,10 +146,12 @@ class RotationQuaterion:
         Returns:
             euler (ndarray[3]): extrinsic xyz euler angles (roll, pitch, yaw)
         """
-        avec = self.as_euler()
+        angle = 2*np.arccos(self.real_part)
+        n = self.vec_part/(1- self.real_part**2)**0.5
 
         # TODO replace this with your own code
         # avec = solution.quaternion.RotationQuaterion.as_avec(self)
+        avec = n*angle
 
         return avec
 
