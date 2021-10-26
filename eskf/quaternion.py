@@ -61,7 +61,6 @@ class RotationQuaterion:
             [np.array([0]),- eps.T ],
             [eps, S ]
         ])
-        # q_product2 = ( self.real_part*I + A) @ (np.append(other.real_part,  other.vec_part))
         q_product = np.dot( self.real_part*I + A, np.append(other.real_part, other.vec_part))
         quaternion_product = RotationQuaterion(q_product[0], q_product[1:])
 
