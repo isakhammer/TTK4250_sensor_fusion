@@ -18,6 +18,7 @@ def get_cross_matrix(vec: ndarray) -> ndarray:
         S (ndarray[3,3]): cross product matrix equivalent
     """
 
+
     S = np.array([[0, -vec[2], vec[1]],
             [vec[2], 0, -vec[0]],
             [-vec[1], vec[0], 0]])

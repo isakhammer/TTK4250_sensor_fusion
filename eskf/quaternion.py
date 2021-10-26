@@ -51,9 +51,7 @@ class RotationQuaterion:
             quaternion_product (RotationQuaternion): the product
         """
 
-
-
-        # equation 10.34
+         # equation 10.34
         I = np.identity(4)
         S = get_cross_matrix(self.vec_part)
         eps = self.vec_part.reshape(-1,1) #shape (3,1)
@@ -64,8 +62,9 @@ class RotationQuaterion:
         q_product = np.dot( self.real_part*I + A, np.append(other.real_part, other.vec_part))
         quaternion_product = RotationQuaterion(q_product[0], q_product[1:])
 
-        # TODO: remove when test is good
-        # quaternion_product = solution.quaternion.RotationQuaterion.multiply(self,other)
+        # TODO replace this with your own code
+        # quaternion_product = solution.quaternion.RotationQuaterion.multiply(
+        #     self, other)
 
         return quaternion_product
 
@@ -88,7 +87,7 @@ class RotationQuaterion:
         Returns:
             R (ndarray[3,3]): rotation matrix
         """
-        # equation 10.38
+           # equation 10.38
         phi, theta, psi = self.as_euler()
 
         # equation 10.18
@@ -110,8 +109,9 @@ class RotationQuaterion:
 
         R = R_psi@R_theta@R_phi
 
-        # TODO: remove when small numerical error is fixed
+        # TODO replace this with your own code
         # R = solution.quaternion.RotationQuaterion.as_rotmat(self)
+
         return R
 
     @property
@@ -124,7 +124,6 @@ class RotationQuaterion:
         Returns:
             euler (ndarray[3]): extrinsic xyz euler angles (roll, pitch, yaw)
         """
-
         # equation 10.38
         mu = self.real_part
         eps1, eps2, eps3 = self.vec_part
@@ -134,6 +133,7 @@ class RotationQuaterion:
 
         euler = np.array([phi, theta, psi])
 
+
         # TODO replace this with your own code
         # euler = solution.quaternion.RotationQuaterion.as_euler(self)
 
@@ -142,15 +142,20 @@ class RotationQuaterion:
     def as_avec(self) -> 'ndarray[3]':
         """Get the angles vector representation of self
 
+        Hint: this is most often called rotation vector or rotvec. 
+
         Returns:
-            euler (ndarray[3]): extrinsic xyz euler angles (roll, pitch, yaw)
+            avec (ndarray[3]):  3 dimensional vector which is co-directional to
+                the axis of rotation and whose norm gives the angle of rotation
         """
+
+        # https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
         angle = 2*np.arccos(self.real_part)
         n = self.vec_part/(1- self.real_part**2)**0.5
+        avec = n*angle # unit quaternion with a scalar or something
 
         # TODO replace this with your own code
         # avec = solution.quaternion.RotationQuaterion.as_avec(self)
-        avec = n*angle
 
         return avec
 
