@@ -92,6 +92,24 @@ class ESKF():
             x_nom_pred (NominalState): predicted nominal state
         """
 
+        # equation 10.58 with discretization given in Task 3b
+        Ts = x_nom_prev.ts
+        am = # acc measured
+        ab = None # acc bias
+        wm = None # w measured
+        wb = None # w bias
+        a = x_nom_prev.ori.R*(am - ab)
+        w = wm - wb 
+
+        kappa = Ts*w
+        x_nom_pred = NominalState()
+        x_nom_pred.vel = x_nom_prev.vel + Ts*a
+        x_nom_pred.pos = x_nom_prev.pos + Ts*x_nom_prev.vel + Ts*0.5*a
+
+        x_nom_pred.ori = x_nom_prev.ori@np.exp(kappa*0.5) # please formulate
+        x_nom_pred.accm_bias = x_nom_prev.accm_bias 
+        x_nom_pred.gyro_bias= x_nom_prev.gyro_bias
+
         # TODO replace this with your own code
         x_nom_pred = solution.eskf.ESKF.predict_nominal(
             self, x_nom_prev, z_corr)
