@@ -70,6 +70,13 @@ class ESKF():
             CorrectedImuMeasurement: corrected IMU measurement
         """
 
+
+        # something like this ???? a_bt and w_bt formula given in table 10.1
+        z_corr = CorrectedImuMeasurement(z_imu)
+        z_corr.acc += accm_correction
+        z_corr.avel += gyro_correction
+
+        # accm or gyro
         # TODO replace this with your own code
         z_corr = solution.eskf.ESKF.correct_z_imu(self, x_nom_prev, z_imu)
 
