@@ -72,9 +72,11 @@ class ESKF():
 
 
         # something like this ???? a_bt and w_bt formula given in table 10.1
-        z_corr = CorrectedImuMeasurement(z_imu)
-        z_corr.acc += accm_correction
-        z_corr.avel += gyro_correction
+        run_code = True
+        if run_code:
+            z_corr = CorrectedImuMeasurement(z_imu)
+            z_corr.acc += accm_correction
+            z_corr.avel += gyro_correction
 
         # accm or gyro
         # TODO replace this with your own code
