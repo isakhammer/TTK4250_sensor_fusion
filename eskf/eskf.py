@@ -101,10 +101,10 @@ class ESKF():
 
         # equation 10.58 with discretization given in Task 3b
         Ts = x_nom_prev.ts
-        am = # acc measured
-        ab = None # acc bias
-        wm = None # w measured
-        wb = None # w bias
+        am = z_corr.acc      # acc measured
+        ab = None            # acc bias
+        wm = z_corr.avel     # w measured
+        wb = None            # w bias
         a = x_nom_prev.ori.R*(am - ab)
         w = wm - wb 
 
