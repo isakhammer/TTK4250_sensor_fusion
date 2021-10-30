@@ -295,10 +295,22 @@ class ESKF():
             Ad (ndarray[15, 15]): discrede transition matrix
             GQGTd (ndarray[15, 15]): discrete noise covariance matrix
         """
+        #Get matrices for continous time
+        Aerr = self.get_error_A_continous(x_nom_prev,z_corr)
+        GQGTerr = self.get_error_GQGT_continous(x_nom_prev)
 
-        # TODO replace this with your own code
-        Ad, GQGTd = solution.eskf.ESKF.get_discrete_error_diff(
-            self, x_nom_prev, z_corr)
+        #Matrix according to hint
+        T_s = z_corr.ts - x_nom_prev.ts #Is this correct!?
+        V = np.block([[-Aerr, GQGTerr], [np.zeros_like(Aerr), Aerr.T]]) * T_s
+
+        #Calc exponential with possibility for approx if given (as stated in task)
+        Vexp = self.get_van_loan_matrix(V)
+
+        #Extract discrete matrices
+        AdT = Vexp[15:,15:]
+        Ad = AdT.T
+
+        GQGTd = Ad @ Vexp[0:15,15:]
 
         return Ad, GQGTd
 
