@@ -144,30 +144,35 @@ class ESKF():
         """
 
         # Transition transition matrix 10.68
+        R_q = x_nom_prev.ori.as_rotmat()
+        am = z_corr.acc
+        wm = z_corr.avel
+        ab = x_nom_prev.accm_bias
+        wb = x_nom_prev.gyro_bias
+        S_a = get_cross_matrix(am - ab)
+        S_w = get_cross_matrix(wm - wb)
 
-        # # Get R(q)
-        # R_q = x_nom_prev.orientation.as_rotmat()
-        # am = z_corr.acc
-        # wm = z_corr.wm
-        # ab = x_nom_prev.accm_bias
-        # wb = x_nom_prev.gyro_bias
-        # S_a = get_cross_matrix(am - ab)
-        # S_w = get_cross_matrix(wm - wb)
-        # # Get dimension of I or use A[block_3x3] = np.eye(3)
-        # I = np.identity(3) 
-        # # Get n vector
+        # Get dimension of I or use A[block_3x3] = np.eye(3)
+        I = np.identity(3) 
         
-        
-        # # Get p_ab and p_wb parameters
-        # p_ab = x_nom_prev.pos
+        # Get p_ab and p_wb parameters
+        p_ab = x_nom_prev.accm_bias
+        p_wb = x_nom_prev.gyro_bias
 
-        # # Get 
-        # p_wb = z_corr.avel
+        # A
+        A = np.zeros((15,15))
+        A[block_3x3(1,0)] = I
 
-        # A =  None
-        
+        A[block_3x3(2,1)] = R_q@S_a
+        A[block_3x3(3,1)] = -R_q
+
+        A[block_3x3(2,2)] = -S_w
+        A[block_3x3(4,2)] = -I
+
+        A[block_3x3(3,3)] = -p_ab*I
+        A[block_3x3(4,4)] = -p_wb*I
+
         # Contruct matrix
-
 
         # TODO replace this with your own code
         A = solution.eskf.ESKF.get_error_A_continous(self, x_nom_prev, z_corr)
