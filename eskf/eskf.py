@@ -146,6 +146,19 @@ class ESKF():
             A (ndarray[15,15]): A
         """
 
+        # Transition transition matrix 10.68
+
+        # Get R(q)
+        # Get S(am - ab)
+        # Get S(wm - wb)
+        # Get dimension of I
+        # Get n vector
+        # Get P_ab
+        # Get p_wb
+        # Get dx = [d rho, dv, dtheta, da_b, d_wb]
+        # Contruct matrix
+
+
         # TODO replace this with your own code
         A = solution.eskf.ESKF.get_error_A_continous(self, x_nom_prev, z_corr)
 
@@ -380,6 +393,9 @@ class ESKF():
             x_nom_inj (NominalState): nominal state after injection
             x_err_inj (ErrorStateGauss): error state gaussian after injection
         """
+
+        # 10.85 and 10.72 inject into nominal state
+        # 10.86 Find error state
 
         # TODO replace this with your own code
         x_nom_inj, x_err_inj = solution.eskf.ESKF.inject(
