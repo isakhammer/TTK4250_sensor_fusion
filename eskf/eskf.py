@@ -206,8 +206,6 @@ class ESKF():
         A[block_3x3(3,3)] = -p_ab*I
         A[block_3x3(4,4)] = -p_wb*I
 
-        # Contruct matrix
-
         # TODO replace this with your own code
         A = solution.eskf.ESKF.get_error_A_continous(self, x_nom_prev, z_corr)
 
@@ -231,6 +229,13 @@ class ESKF():
         Returns:
             GQGT (ndarray[15, 15]): G @ Q @ G.T
         """
+        
+        # Find G
+        # Find Q
+        # multiply ;) 
+
+
+
 
         # TODO replace this with your own code
         GQGT = solution.eskf.ESKF.get_error_GQGT_continous(self, x_nom_prev)
