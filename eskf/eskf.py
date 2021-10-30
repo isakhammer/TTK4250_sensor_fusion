@@ -244,9 +244,9 @@ class ESKF():
         I = np.identity(3)
         dt = x_nom_prev.ts 
         Vtilde = self.accm_bias_std**2 * I/dt
+        Thtilde = self.gyro_bias_std**2 * I/dt
 
         # multiply ;) 
-
 
 
 

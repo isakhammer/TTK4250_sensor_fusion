@@ -46,7 +46,6 @@ def compare(a, b):
     else:
         return a == b
 
-
 class Test_ESKF_correct_z_imu:
     def test_output(self, test_data):
         """Tests if the function is correct by comparing the output
