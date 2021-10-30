@@ -56,7 +56,7 @@ class ESKF():
                       x_nom_prev: NominalState,
                       z_imu: ImuMeasurement,
                       ) -> CorrectedImuMeasurement:
-        """Correct IMU measurement so it gives a measurmenet of acceleration 
+        """Correct IMU measurement so it gives a measurmenet of acceleration  
         and angular velocity in body.
 
         Hint: self.accm_correction and self.gyro_correction translates 
@@ -68,19 +68,16 @@ class ESKF():
 
         Returns:
             CorrectedImuMeasurement: corrected IMU measurement
-        """
+            """
 
+        z_corr = CorrectedImuMeasurement(z_imu.ts,z_imu.acc,z_imu.avel)
 
-        # something like this ???? a_bt and w_bt formula given in table 10.1
-        run_code = True
-        if run_code:
-            z_corr = CorrectedImuMeasurement(z_imu)
-            z_corr.acc += accm_correction
-            z_corr.avel += gyro_correction
+        z_corr.acc = self.accm_correction @ (z_imu.acc - x_nom_prev.accm_bias)
+        z_corr.avel = self.gyro_correction @ (z_imu.avel - x_nom_prev.gyro_bias)
 
         # accm or gyro
         # TODO replace this with your own code
-        z_corr = solution.eskf.ESKF.correct_z_imu(self, x_nom_prev, z_imu)
+        # z_corr = solution.eskf.ESKF.correct_z_imu(self, x_nom_prev, z_imu)
 
         return z_corr
 
