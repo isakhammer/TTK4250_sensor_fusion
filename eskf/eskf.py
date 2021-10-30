@@ -231,7 +231,20 @@ class ESKF():
         """
         
         # Find G
+        R_q = x_nom_prev.ori.as_rotmat()
+        G = np.zeros((3*5, 3*4))
+        I = np.identity(3)
+
+        G[block_3x3(1,0)] = R_q
+        G[block_3x3(2,1)] = -I
+        G[block_3x3(3,2)] = I
+        G[block_3x3(4,3)] = I
+
         # Find Q
+        I = np.identity(3)
+        dt = x_nom_prev.ts 
+        Vtilde = self.accm_bias_std**2 * I/dt
+
         # multiply ;) 
 
 
