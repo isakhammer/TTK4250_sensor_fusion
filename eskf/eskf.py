@@ -85,7 +85,7 @@ class ESKF():
                         x_nom_prev: NominalState,
                         z_corr: CorrectedImuMeasurement,
                         ) -> NominalState:
-        """Predict the nominal state, given a corrected IMU measurement
+        '''Predict the nominal state, given a corrected IMU measurement
 
         Hint: Discrete time prediction of equation (10.58)
         See the assignment description for more hints 
@@ -96,29 +96,63 @@ class ESKF():
 
         Returns:
             x_nom_pred (NominalState): predicted nominal state
-        """
+        '''
 
-        # equation 10.58 with discretization given in Task 3b
-        Ts = x_nom_prev.ts
-        am = z_corr.acc      # acc measured
-        ab = None            # acc bias
-        wm = z_corr.avel     # w measured
-        wb = None            # w bias
-        a = x_nom_prev.ori.R*(am - ab)
-        w = wm - wb 
+        #Define a and omega according to task
+        R = x_nom_prev.ori.as_rotmat()
+        acc_approx = R @ (z_corr.acc - x_nom_prev.accm_bias) + self.g
+        omega = z_corr.avel - x_nom_prev.gyro_bias
 
-        kappa = Ts*w
-        x_nom_pred = NominalState()
-        x_nom_pred.vel = x_nom_prev.vel + Ts*a
-        x_nom_pred.pos = x_nom_prev.pos + Ts*x_nom_prev.vel + Ts*0.5*a
+        #Time step
+        T_s = z_corr.ts - x_nom_prev.ts
 
-        x_nom_pred.ori = x_nom_prev.ori@np.exp(kappa*0.5) # please formulate
-        x_nom_pred.accm_bias = x_nom_prev.accm_bias 
-        x_nom_pred.gyro_bias= x_nom_prev.gyro_bias
+        #Calc predicted nominal states
+        #Position
+        p_next = x_nom_prev.pos + T_s * x_nom_prev.vel + (T_s**2) * acc_approx / 2
 
-        # TODO replace this with your own code
-        x_nom_pred = solution.eskf.ESKF.predict_nominal(
-            self, x_nom_prev, z_corr)
+        #Velocity
+        v_next = x_nom_prev.vel + T_s * acc_approx
+
+        #Quaternion
+        kappa = T_s * omega  #From task
+        two_norm_of_kappa = np.linalg.norm(kappa)
+        normalized_kappa = kappa / two_norm_of_kappa
+
+        #New quaternion
+        q_temp = x_nom_prev.ori
+
+        #Create a new empty vector for the vector part of the quaternion prediction
+        q_vec_part = np.zeros((3,))
+
+        #Calc new quaternion according to task
+        q_temp.real_part = np.cos(two_norm_of_kappa / 2)
+
+        q_vec_part[0] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[0]
+        q_vec_part[1] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[1]
+        q_vec_part[2] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[2]
+
+        q_temp.vec_part = q_vec_part
+
+        #Calc prediction
+        #q_next = x_nom_prev.ori.multiply(q_temp)
+        q_next = x_nom_prev.ori @ q_temp
+        q_next = RotationQuaterion(q_next.real_part,q_next.vec_part)
+        #q_next = q_next / np.linalg.norm(q_next)
+
+        #Bias predictions
+        next_accm_bias = x_nom_prev.accm_bias + T_s * (-self.accm_bias_p * np.eye(3) @ x_nom_prev.accm_bias)
+        next_gyro_bias = x_nom_prev.gyro_bias + T_s * (-self.gyro_bias_p * np.eye(3) @ x_nom_prev.gyro_bias)
+
+        #Create new NominalState
+        x_nom_pred = x_nom_prev
+        x_nom_pred.ts = z_corr.ts
+        x_nom_pred.pos = p_next
+        x_nom_pred.vel = v_next
+        x_nom_pred.ori = q_next
+        x_nom_pred.accm_bias = next_accm_bias
+        x_nom_pred.gyro_bias = next_gyro_bias
+
+        # gå videre til neste oppgave 
 
         return x_nom_pred
 
