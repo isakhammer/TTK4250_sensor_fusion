@@ -156,8 +156,8 @@ class ESKF():
         I = np.identity(3) 
         
         # Get p_ab and p_wb parameters
-        p_ab = x_nom_prev.accm_bias
-        p_wb = x_nom_prev.gyro_bias
+        p_ab = self.accm_bias_p
+        p_wb = self.gyro_bias_p
 
         # A
         A = np.zeros((15,15))
