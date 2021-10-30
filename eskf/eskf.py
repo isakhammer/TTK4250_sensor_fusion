@@ -145,14 +145,27 @@ class ESKF():
 
         # Transition transition matrix 10.68
 
-        # Get R(q)
-        # Get S(am - ab)
-        # Get S(wm - wb)
-        # Get dimension of I
-        # Get n vector
-        # Get P_ab
-        # Get p_wb
-        # Get dx = [d rho, dv, dtheta, da_b, d_wb]
+        # # Get R(q)
+        # R_q = x_nom_prev.orientation.as_rotmat()
+        # am = z_corr.acc
+        # wm = z_corr.wm
+        # ab = x_nom_prev.accm_bias
+        # wb = x_nom_prev.gyro_bias
+        # S_a = get_cross_matrix(am - ab)
+        # S_w = get_cross_matrix(wm - wb)
+        # # Get dimension of I or use A[block_3x3] = np.eye(3)
+        # I = np.identity(3) 
+        # # Get n vector
+        
+        
+        # # Get p_ab and p_wb parameters
+        # p_ab = x_nom_prev.pos
+
+        # # Get 
+        # p_wb = z_corr.avel
+
+        # A =  None
+        
         # Contruct matrix
 
 
