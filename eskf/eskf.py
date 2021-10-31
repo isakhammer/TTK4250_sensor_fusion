@@ -388,6 +388,13 @@ class ESKF():
             H (ndarray[3, 15]): [description]
         """
 
+
+        # Some useful (or useless) equations found on the forum:
+        # R =exp(S(delta_theta))  
+        # J = d/dh (R) =  S(delta_theta)
+
+        # equation 10.71
+
         # TODO replace this with your own code
         H = solution.eskf.ESKF.get_gnss_measurment_jac(self, x_nom)
 
