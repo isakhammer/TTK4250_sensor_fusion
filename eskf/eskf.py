@@ -490,10 +490,24 @@ class ESKF():
         Returns:
             x_err_upd_gauss (ErrorStateGauss): updated error state gaussian
         """
+        
+        # Must use robust calc of posterior covariance
+        # 10.75
+        H = self.get_gnss_measurment_jac(x_nom)
+        R = self.get_gnss_cov(z_gnss) 
+        z_gnss_pred_gauss =  self.predict_gnss_measurement( x_nom, x_err, z_gnss)
+        P = z_gnss_pred_gauss.cov
 
+        W = P@H.T@np.linalg.inv(H@P@H.T + R) 
+        I_WH = np.eye(P.shape) - W @ H
+        P_upd = (I_WH @ P @ I_WH.T + W @ R @ W.T)
+
+        delta_xhat_mean = W@(z_gnss_pred_gauss.mean - H@)
+        mean= None
+        x_err = ErrorStateGauss(delta_xhat_mean, P_upd, z_gnss.ts)
         # TODO replace this with your own code
-        x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
-            self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
+        # x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
+        #     self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
 
         return x_err_upd_gauss
 
