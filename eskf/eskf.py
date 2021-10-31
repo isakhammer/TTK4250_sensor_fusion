@@ -240,13 +240,12 @@ class ESKF():
         G[block_3x3(3,2)] = I
         G[block_3x3(4,3)] = I
 
-        # Find Q
+        # Find Qtilde in 10.69
         I = np.identity(3)
         dt = x_nom_prev.ts 
         Vtilde = self.accm_bias_std**2 * I/dt
         Thtilde = self.gyro_bias_std**2 * I/dt
-
-        # multiply ;) 
+        Atilde = None # where is this defined?
 
 
 
