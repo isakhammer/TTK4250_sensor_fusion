@@ -506,8 +506,8 @@ class ESKF():
         mean= None
         x_err = ErrorStateGauss(delta_xhat_mean, P_upd, z_gnss.ts)
         # TODO replace this with your own code
-        # x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
-        #     self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
+        x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
+            self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
 
         return x_err_upd_gauss
 
