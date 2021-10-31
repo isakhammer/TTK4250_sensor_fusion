@@ -331,6 +331,15 @@ class ESKF():
         Returns:
             x_err_pred (ErrorStateGauss): predicted error state
         """
+        
+        #Get system matrices
+        Ad,Qd = self.get_discrete_error_diff(x_nom_prev,z_corr)
+
+        #Get n
+        n = None
+
+        #Calc next delta_x or x_err_pred for the dicrete case
+        x_err_pred = Ad @ x_err_prev_gauss + Qd @ n
 
         # TODO replace this with your own code
         x_err_pred = solution.eskf.ESKF.predict_x_err(
@@ -355,6 +364,13 @@ class ESKF():
             x_err_pred (ErrorStateGauss): predicted error state
         """
 
+        #Correct the imu-measurement
+        z_corr = self.correct_z_imu(x_nom_prev,z_imu)
+
+        #Call the two finished functions
+        x_nom_pred = self.predict_nominal(x_nom_prev,z_corr)
+        x_err_pred = self.predict_x_err(x_nom_prev,x_err_gauss,z_corr)
+        
         # TODO replace this with your own code
         x_nom_pred, x_err_pred = solution.eskf.ESKF.predict_from_imu(
             self, x_nom_prev, x_err_gauss, z_imu)
