@@ -333,17 +333,19 @@ class ESKF():
         """
         
         #Get system matrices
-        Ad,Qd = self.get_discrete_error_diff(x_nom_prev,z_corr)
+        Ad, GQGTd = self.get_discrete_error_diff(x_nom_prev,z_corr)
 
-        #Get n
-        n = None
+        #Mean is zero
+        predict_x_err_mean = np.zeros((15,))
 
-        #Calc next delta_x or x_err_pred for the dicrete case
-        x_err_pred = Ad @ x_err_prev_gauss + Qd @ n
+        #Calc covariance matrix for discrete case
+        predict_x_err_cov = Ad @ x_err_prev_gauss.cov @ Ad.T + GQGTd
 
-        # TODO replace this with your own code
-        x_err_pred = solution.eskf.ESKF.predict_x_err(
-            self, x_nom_prev, x_err_prev_gauss, z_corr)
+        #Time stamp
+        predict_x_err_ts = z_corr.ts
+
+        #New ErrorStateGaussian
+        x_err_pred = ErrorStateGauss(predict_x_err_mean,predict_x_err_cov,predict_x_err_ts)
 
         return x_err_pred
 
