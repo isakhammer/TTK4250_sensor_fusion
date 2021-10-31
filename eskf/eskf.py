@@ -502,9 +502,10 @@ class ESKF():
         I_WH = np.eye(P.shape) - W @ H
         P_upd = (I_WH @ P @ I_WH.T + W @ R @ W.T)
 
-        delta_xhat_mean = W@(z_gnss_pred_gauss.mean - H@)
-        mean= None
+        delta_xhat_mean = None # W@(z_gnss_pred_gauss.mean - H@x)
+        mean = None # what should I do???
         x_err = ErrorStateGauss(delta_xhat_mean, P_upd, z_gnss.ts)
+
         # TODO replace this with your own code
         x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
             self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
@@ -562,7 +563,6 @@ class ESKF():
                                     ErrorStateGauss,
                                     MultiVarGaussStamped]:
         """Method called every time an gnss measurement is received.
-
 
         Args:
             x_nom_prev (NominalState): previous nominal state
