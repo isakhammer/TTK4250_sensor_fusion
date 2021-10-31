@@ -447,10 +447,22 @@ class ESKF():
         Returns:
             z_gnss_pred_gauss (MultiVarGaussStamped): gnss prediction gaussian
         """
+        
+        #Mean
+        z_gnss_pred_gauss_mean = x_nom.pos + x_nom.ori.R @ self.lever_arm
 
-        # TODO replace this with your own code
-        z_gnss_pred_gauss = solution.eskf.ESKF.predict_gnss_measurement(
-            self, x_nom, x_err, z_gnss)
+        #Get jacobian and cov matrices
+        H = self.get_gnss_measurment_jac(x_nom)
+        gnss_cov = self.get_gnss_cov(z_gnss)
+
+        #Covariance
+        z_gnss_pred_gauss_cov = H @ x_err.cov @ H.T + gnss_cov * np.eye(3)
+
+        #Get time stamp
+        z_gnss_pred_gauss_ts = z_gnss.ts
+
+        #New MultiVarGaussStamped
+        z_gnss_pred_gauss = MultiVarGaussStamped(z_gnss_pred_gauss_mean, z_gnss_pred_gauss_cov, z_gnss_pred_gauss_ts)
 
         return z_gnss_pred_gauss
 
