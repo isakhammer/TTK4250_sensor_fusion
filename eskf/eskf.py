@@ -514,13 +514,29 @@ class ESKF():
             x_nom_inj (NominalState): nominal state after injection
             x_err_inj (ErrorStateGauss): error state gaussian after injection
         """
+        
+        #Calc injection step according to Eq. 10.72 in book
+        pos_inject = x_nom_prev.pos + x_err_upd.pos
+        vel_inject = x_nom_prev.vel + x_err_upd.vel
+        ori_inject = x_nom_prev.ori @ RotationQuaterion(1, x_err_upd.avec / 2)
+        accm_bias_inject = x_nom_prev.accm_bias + x_err_upd.accm_bias
+        gyro_bias_inject = x_nom_prev.gyro_bias + x_err_upd.gyro_bias
+        
+        #Time stamp
+        ts_inject = x_err_upd.ts
 
-        # 10.85 and 10.72 inject into nominal state
-        # 10.86 Find error state
+        #New nominal state
+        x_nom_inj = NominalState(pos_inject, vel_inject, ori_inject, accm_bias_inject,gyro_bias_inject, ts_inject)
 
-        # TODO replace this with your own code
-        x_nom_inj, x_err_inj = solution.eskf.ESKF.inject(
-            self, x_nom_prev, x_err_upd)
+        #Follow the hint, and do as stated in Eq. 10.86 in book
+        #Calc G matrix
+        center_of_matrix = np.eye(3) - get_cross_matrix(x_err_upd.avec / 2)
+        G = scipy.linalg.block_diag(np.eye(6), center_of_matrix, np.eye(6))
+
+        #Find new P matrix
+        P_inject = G @ x_err_upd.cov @ G.T
+
+        x_err_inj = ErrorStateGauss(np.zeros((15, )), P_inject, ts_inject)
 
         return x_nom_inj, x_err_inj
 
