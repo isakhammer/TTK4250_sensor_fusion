@@ -397,8 +397,14 @@ class ESKF():
 
         # equation 10.71
 
-        # TODO replace this with your own code
-        H = solution.eskf.ESKF.get_gnss_measurment_jac(self, x_nom)
+        #Preallocate
+        H = np.zeros((3,15))
+
+        #Top part of H is identity (Eq. 10.80 <in book)
+        H[0:3,0:3] = np.eye(3)
+
+        #Using hint the rest of H is not zero as in Eq. 10.80, but rather accounts for the rotation of the lever_arm
+        H[0:3,6:9] = -x_nom.ori.R @ get_cross_matrix(self.lever_arm)
 
         return H
 
