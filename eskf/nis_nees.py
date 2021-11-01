@@ -28,7 +28,7 @@ def get_NIS(z_gnss: GnssMeasurement,
     #Get measurement
     measurement = z_gnss.pos
 
-    #Take into account marginal cases
+    #Take into account marginalization cases
     if marginal_idxs != None:
         measurement = measurement[marginal_idxs]
         z_gnss_pred_gauss = z_gnss_pred_gauss.marginalize(marginal_idxs)
@@ -93,11 +93,16 @@ def get_NEES(error: 'ndarray[15]',
         NEES (float): NEES value
     """
 
-    Pk = np.linalg.inv( x_err.marginalize(marginal_idxs).cov) 
-    NEES = error[marginal_idxs].T @ Pk@ error[marginal_idxsj
+    #Take into account marginalization cases
+    if marginal_idxs != None:
+        error = error[marginal_idxs]
+        x_err = x_err.marginalize(marginal_idxs)
 
-    # TODO replace this with your own code
-    # NEES = solution.nis_nees.get_NEES(error, x_err, marginal_idxs)
+    #Covariance
+    P = x_err.cov
+
+    #Calc NEES according to Eq. 4.65 in book
+    NEES = error.T @ np.linalg.inv(P) @ error
 
     return NEES
 
