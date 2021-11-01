@@ -25,6 +25,7 @@ def get_NIS(z_gnss: GnssMeasurement,
         NIS (float): NIS value
     """
 
+    #Get measurement
     measurement = z_gnss.pos
 
     #Take into account marginal cases
@@ -41,20 +42,37 @@ def get_NIS(z_gnss: GnssMeasurement,
 def get_error(x_true: NominalState,
               x_nom: NominalState,
               ) -> 'ndarray[15]':
-    """Finds the error (difference) between True state and
+    """Finds the error (difference) between True state and 
     nominal state. See (Table 10.1).
 
 
     Returns:
-        error (ndarray[15]): difference between x_true and x_nom.
+        error (ndarray[15]): difference between x_true and x_nom. 
     """
-    xt = np.hstack([ x_true.pos, x_true.vel, x_true.ori.vec_part, x_true.accm_bias, x_true.gyro_bias ])
-    xn = np.hstack([ x_nom.pos, x_nom.vel, x_nom.ori.vec_part, x_nom.accm_bias, x_nom.gyro_bias ])
-    error = xt - xn
-    
 
-    # TODO replace this with your own code
-    error = solution.nis_nees.get_error(x_true, x_nom)
+    #Error position and velocity as in table 10.1
+    error_pos = x_true.pos - x_nom.pos
+    error_vel = x_true.vel - x_nom.vel
+
+    #Need some trickeru for error of orientation as in Table 10.1
+    q = x_nom.ori
+    norm_of_q_squared = q.real_part**2 + q.vec_part.T @ q.vec_part
+    q_conj = q.conjugate()
+
+    #Inverse of quaternion (Eq. 10.27)
+    q_inv_real_part = q_conj.real_part / norm_of_q_squared
+    q_inv_vec_part = q_conj.vec_part / norm_of_q_squared
+    q_inv = RotationQuaterion(q_inv_real_part,q_inv_vec_part)
+
+    #Error of orientation as in Table 10.1
+    error_q = q_inv @ x_true.ori
+    error_ori = error_q.as_avec()
+
+    #Error of biases as in table 10.1
+    error_accm_bias = x_true.accm_bias - x_nom.accm_bias
+    error_gyro_bias = x_true.gyro_bias - x_nom.gyro_bias
+
+    error = np.concatenate((error_pos, error_vel, error_ori, error_accm_bias, error_gyro_bias))
 
     return error
 
@@ -75,8 +93,8 @@ def get_NEES(error: 'ndarray[15]',
         NEES (float): NEES value
     """
 
-    Pkinv = np.linalg.inv( x_err.marginalize(marginal_idxs).cov) 
-    NEES = error[marginal_idxs].T @ Pkinv@ error[marginal_idxsj
+    Pk = np.linalg.inv( x_err.marginalize(marginal_idxs).cov) 
+    NEES = error[marginal_idxs].T @ Pk@ error[marginal_idxsj
 
     # TODO replace this with your own code
     # NEES = solution.nis_nees.get_NEES(error, x_err, marginal_idxs)
