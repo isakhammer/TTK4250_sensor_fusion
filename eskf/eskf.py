@@ -230,7 +230,7 @@ class ESKF():
             GQGT (ndarray[15, 15]): G @ Q @ G.T
         """
         
-        # Find G
+        # Find G in 10.68
         R_q = x_nom_prev.ori.as_rotmat()
         G = np.zeros((3*5, 3*4))
         I = np.identity(3)
@@ -242,11 +242,14 @@ class ESKF():
 
         # Find Qtilde in 10.69
         I = np.identity(3)
-        dt = x_nom_prev.ts 
+        dt = x_nom_prev.ts  # this is not defined
         Vtilde = self.accm_bias_std**2 * I/dt
         Thtilde = self.gyro_bias_std**2 * I/dt
         Atilde = None # where is this defined?
+        Omegatilde = None # where is this defined?
 
+        Qtilde = scipy.linalg.block_diag(Vtilde, Thtilde, Atilde, Omegatilde)
+        GQGT = G@Qtilde@G.T
 
 
         # TODO replace this with your own code
