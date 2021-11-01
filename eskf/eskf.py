@@ -384,18 +384,11 @@ class ESKF():
 
         Hint: the gnss antenna has a relative position to the center given by
         self.lever_arm. How will the gnss measurement change if the drone is 
-        rotated differently? Use get_cross_matrix and some other stuff :) 
+        rotated differently? Use get_cross_matrix and some other stuff :)
 
         Returns:
             H (ndarray[3, 15]): [description]
         """
-
-
-        # Some useful (or useless) equations found on the forum:
-        # R =exp(S(delta_theta))  
-        # J = d/dh (R) =  S(delta_theta)
-
-        # equation 10.71
 
         #Preallocate
         H = np.zeros((3,15))
@@ -447,7 +440,7 @@ class ESKF():
         Returns:
             z_gnss_pred_gauss (MultiVarGaussStamped): gnss prediction gaussian
         """
-        
+
         #Mean
         z_gnss_pred_gauss_mean = x_nom.pos + x_nom.ori.R @ self.lever_arm
 
@@ -491,24 +484,25 @@ class ESKF():
             x_err_upd_gauss (ErrorStateGauss): updated error state gaussian
         """
         
-        # Must use robust calc of posterior covariance
-        # 10.75
+        #Follow hint: Need to calc W accordint to Eq. 10.75
+        P = x_err.cov
         H = self.get_gnss_measurment_jac(x_nom)
-        R = self.get_gnss_cov(z_gnss) 
-        z_gnss_pred_gauss =  self.predict_gnss_measurement( x_nom, x_err, z_gnss)
-        P = z_gnss_pred_gauss.cov
+        R = self.get_gnss_cov(z_gnss)
 
-        W = P@H.T@np.linalg.inv(H@P@H.T + R) 
-        I_WH = np.eye(P.shape) - W @ H
+        W = P @ H.T @ np.linalg.inv(H @ P @ H.T + R)
+
+        #Use robust method from hint
+        I_WH = np.eye(*P.shape) - W @ H
         P_upd = (I_WH @ P @ I_WH.T + W @ R @ W.T)
 
-        delta_xhat_mean = None # W@(z_gnss_pred_gauss.mean - H@x)
-        mean = None # what should I do???
-        x_err = ErrorStateGauss(delta_xhat_mean, P_upd, z_gnss.ts)
+        #Update mean
+        mean_upd = W @ (z_gnss.pos - z_gnss_pred_gauss.mean)
 
-        # TODO replace this with your own code
-        x_err_upd_gauss = solution.eskf.ESKF.get_x_err_upd(
-            self, x_nom, x_err, z_gnss_pred_gauss, z_gnss)
+        #Time stamp
+        ts_x_err_upd = z_gnss.ts
+
+        #New ErrorStateGauss
+        x_err_upd_gauss = ErrorStateGauss(mean_upd, P_upd, ts_x_err_upd)
 
         return x_err_upd_gauss
 
@@ -529,7 +523,7 @@ class ESKF():
             x_nom_inj (NominalState): nominal state after injection
             x_err_inj (ErrorStateGauss): error state gaussian after injection
         """
-        
+
         #Calc injection step according to Eq. 10.72 in book
         pos_inject = x_nom_prev.pos + x_err_upd.pos
         vel_inject = x_nom_prev.vel + x_err_upd.vel
@@ -563,6 +557,7 @@ class ESKF():
                                     ErrorStateGauss,
                                     MultiVarGaussStamped]:
         """Method called every time an gnss measurement is received.
+
 
         Args:
             x_nom_prev (NominalState): previous nominal state
