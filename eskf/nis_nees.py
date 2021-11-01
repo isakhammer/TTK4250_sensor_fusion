@@ -41,13 +41,17 @@ def get_NIS(z_gnss: GnssMeasurement,
 def get_error(x_true: NominalState,
               x_nom: NominalState,
               ) -> 'ndarray[15]':
-    """Finds the error (difference) between True state and 
+    """Finds the error (difference) between True state and
     nominal state. See (Table 10.1).
 
 
     Returns:
-        error (ndarray[15]): difference between x_true and x_nom. 
+        error (ndarray[15]): difference between x_true and x_nom.
     """
+    xt = np.hstack([ x_true.pos, x_true.vel, x_true.ori.vec_part, x_true.accm_bias, x_true.gyro_bias ])
+    xn = np.hstack([ x_nom.pos, x_nom.vel, x_nom.ori.vec_part, x_nom.accm_bias, x_nom.gyro_bias ])
+    error = xt - xn
+    
 
     # TODO replace this with your own code
     error = solution.nis_nees.get_error(x_true, x_nom)
