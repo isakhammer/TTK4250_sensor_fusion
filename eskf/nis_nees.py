@@ -75,8 +75,11 @@ def get_NEES(error: 'ndarray[15]',
         NEES (float): NEES value
     """
 
+    Pk = np.linalg.inv( x_err.marginalize(marginal_idxs).cov) 
+    NEES = error[marginal_idxs].T @ Pk@ error[marginal_idxsj
+
     # TODO replace this with your own code
-    NEES = solution.nis_nees.get_NEES(error, x_err, marginal_idxs)
+    # NEES = solution.nis_nees.get_NEES(error, x_err, marginal_idxs)
 
     return NEES
 
