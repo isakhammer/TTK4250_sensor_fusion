@@ -25,9 +25,16 @@ def get_NIS(z_gnss: GnssMeasurement,
         NIS (float): NIS value
     """
 
-    # TODO replace this with your own code
-    NIS = solution.nis_nees.get_NIS(z_gnss, z_gnss_pred_gauss, marginal_idxs)
+    measurement = z_gnss.pos
 
+    #Take into account marginal cases
+    if marginal_idxs != None:
+        measurement = measurement[marginal_idxs]
+        z_gnss_pred_gauss = z_gnss_pred_gauss.marginalize(marginal_idxs)
+
+    #Already done for us
+    NIS = z_gnss_pred_gauss.mahalanobis_distance_sq(measurement)
+    
     return NIS
 
 
