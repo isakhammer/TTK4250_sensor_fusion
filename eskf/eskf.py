@@ -114,44 +114,28 @@ class ESKF():
         v_next = x_nom_prev.vel + T_s * acc_approx
 
         #Quaternion
-        kappa = T_s * omega  #From task
-        two_norm_of_kappa = np.linalg.norm(kappa)
-        normalized_kappa = kappa / two_norm_of_kappa
+        omega_norm = np.linalg.norm(omega)
+        kappa = omega/omega_norm
+        alpha = T_s * omega_norm  #From task
 
-        #New quaternion
-        q_temp = x_nom_prev.ori
-
-        #Create a new empty vector for the vector part of the quaternion prediction
-        q_vec_part = np.zeros((3,))
 
         #Calc new quaternion according to task
-        q_temp.real_part = np.cos(two_norm_of_kappa / 2)
-
-        q_vec_part[0] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[0]
-        q_vec_part[1] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[1]
-        q_vec_part[2] = np.sin(two_norm_of_kappa / 2) * normalized_kappa[2]
-
-        q_temp.vec_part = q_vec_part
+        q_temp_real_part = np.cos(alpha / 2)
+        q_temp_vec_part = np.sin(alpha / 2) * kappa
 
         #Calc prediction
-        #q_next = x_nom_prev.ori.multiply(q_temp)
+        q_temp = RotationQuaterion(q_temp_real_part,q_temp_vec_part)
         q_next = x_nom_prev.ori @ q_temp
-        q_next = RotationQuaterion(q_next.real_part,q_next.vec_part)
         #q_next = q_next / np.linalg.norm(q_next)
 
         #Bias predictions
-        next_accm_bias = x_nom_prev.accm_bias + T_s * (-self.accm_bias_p * np.eye(3) @ x_nom_prev.accm_bias)
-        next_gyro_bias = x_nom_prev.gyro_bias + T_s * (-self.gyro_bias_p * np.eye(3) @ x_nom_prev.gyro_bias)
+        # next_accm_bias = x_nom_prev.accm_bias + T_s * (-self.accm_bias_p * np.eye(3) @ x_nom_prev.accm_bias)# xdot = px  -> x = e ^-tp  x_0  => xk1 = e^dt*p xk
+        # next_gyro_bias = x_nom_prev.gyro_bias + T_s * (-self.gyro_bias_p * np.eye(3) @ x_nom_prev.gyro_bias)# 
+        next_accm_bias = np.exp( -T_s*self.accm_bias_p)* x_nom_prev.accm_bias
+        next_gyro_bias = np.exp( -T_s*self.gyro_bias_p)* x_nom_prev.gyro_bias 
 
         #Create new NominalState
-        x_nom_pred = x_nom_prev
-        x_nom_pred.ts = z_corr.ts
-        x_nom_pred.pos = p_next
-        x_nom_pred.vel = v_next
-        x_nom_pred.ori = q_next
-        x_nom_pred.accm_bias = next_accm_bias
-        x_nom_pred.gyro_bias = next_gyro_bias
-
+        x_nom_pred = NominalState(p_next, v_next, q_next, next_accm_bias, next_gyro_bias, z_corr.ts)
         # gå videre til neste oppgave 
 
         return x_nom_pred
