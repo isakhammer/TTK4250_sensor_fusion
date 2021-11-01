@@ -100,8 +100,8 @@ class ESKF():
 
         #Define a and omega according to task
         R = x_nom_prev.ori.as_rotmat()
-        acc_approx = R @ (z_corr.acc - x_nom_prev.accm_bias) + self.g
-        omega = z_corr.avel - x_nom_prev.gyro_bias
+        acc_approx = R @ (z_corr.acc) + self.g
+        omega = z_corr.avel 
 
         #Time step
         T_s = z_corr.ts - x_nom_prev.ts
@@ -163,15 +163,11 @@ class ESKF():
 
         # Transition transition matrix 10.68
         R_q = x_nom_prev.ori.as_rotmat()
-        am = z_corr.acc
-        wm = z_corr.avel
-        ab = x_nom_prev.accm_bias
-        wb = x_nom_prev.gyro_bias
-        S_a = get_cross_matrix(am - ab)
-        S_w = get_cross_matrix(wm - wb)
+        S_a = get_cross_matrix(z_corr.acc)
+        S_w = get_cross_matrix(z_corr.avel)
 
         # Get dimension of I or use A[block_3x3] = np.eye(3)
-        I = np.identity(3) 
+        I = np.eye(3) 
         
         # Get p_ab and p_wb parameters
         p_ab = self.accm_bias_p
@@ -179,19 +175,19 @@ class ESKF():
 
         # A
         A = np.zeros((15,15))
-        A[block_3x3(1,0)] = I
+        A[block_3x3(0,1)] = I
 
-        A[block_3x3(2,1)] = R_q@S_a
-        A[block_3x3(3,1)] = -R_q
+        A[block_3x3(1,2)] = -R_q@S_a
+        A[block_3x3(1,3)] = -R_q @ self.accm_correction
 
         A[block_3x3(2,2)] = -S_w
-        A[block_3x3(4,2)] = -I
+        A[block_3x3(2,4)] = -self.gyro_correction
 
         A[block_3x3(3,3)] = -p_ab*I
         A[block_3x3(4,4)] = -p_wb*I
 
         # TODO replace this with your own code
-        A = solution.eskf.ESKF.get_error_A_continous(self, x_nom_prev, z_corr)
+        # A = solution.eskf.ESKF.get_error_A_continous(self, x_nom_prev, z_corr)
 
         return A
 
@@ -219,25 +215,16 @@ class ESKF():
         G = np.zeros((3*5, 3*4))
         I = np.identity(3)
 
-        G[block_3x3(1,0)] = R_q
+        G[block_3x3(1,0)] = -R_q
         G[block_3x3(2,1)] = -I
         G[block_3x3(3,2)] = I
         G[block_3x3(4,3)] = I
 
-        # Find Qtilde in 10.69
-        I = np.identity(3)
-        dt = x_nom_prev.ts  # this is not defined
-        Vtilde = self.accm_bias_std**2 * I/dt
-        Thtilde = self.gyro_bias_std**2 * I/dt
-        Atilde = None # where is this defined?
-        Omegatilde = None # where is this defined?
-
-        Qtilde = scipy.linalg.block_diag(Vtilde, Thtilde, Atilde, Omegatilde)
-        GQGT = G@Qtilde@G.T
+        GQGT = G@self.Q_err@G.T
 
 
         # TODO replace this with your own code
-        GQGT = solution.eskf.ESKF.get_error_GQGT_continous(self, x_nom_prev)
+        #GQGT = solution.eskf.ESKF.get_error_GQGT_continous(self, x_nom_prev)
 
         return GQGT
 
@@ -361,8 +348,8 @@ class ESKF():
         x_err_pred = self.predict_x_err(x_nom_prev,x_err_gauss,z_corr)
         
         # TODO replace this with your own code
-        x_nom_pred, x_err_pred = solution.eskf.ESKF.predict_from_imu(
-            self, x_nom_prev, x_err_gauss, z_imu)
+        #x_nom_pred, x_err_pred = solution.eskf.ESKF.predict_from_imu(
+           # self, x_nom_prev, x_err_gauss, z_imu)
 
         return x_nom_pred, x_err_pred
 
