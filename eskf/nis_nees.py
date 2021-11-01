@@ -5,6 +5,7 @@ from typing import Sequence, Optional
 from datatypes.measurements import GnssMeasurement
 from datatypes.eskf_states import NominalState, ErrorStateGauss
 from datatypes.multivargaussian import MultiVarGaussStamped
+from quaternion import RotationQuaterion
 
 import solution
 
