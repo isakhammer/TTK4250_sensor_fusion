@@ -50,7 +50,7 @@ def plot_state(x_nom_seq: Sequence[NominalState]):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.08, top=0.97,
                         hspace=0.1)
-    fig.savefig(plot_folder.joinpath("States.pdf"))
+    # fig.savefig(plot_folder.joinpath("States.pdf"))
 
 
 def plot_errors(times: Sequence[float], errors: Sequence['ndarray[15]']):
@@ -85,7 +85,7 @@ def plot_errors(times: Sequence[float], errors: Sequence['ndarray[15]']):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.08, top=0.97,
                         hspace=0.1)
-    fig.savefig(plot_folder.joinpath("Errors.pdf"))
+    # fig.savefig(plot_folder.joinpath("Errors.pdf"))
 
 
 def plot_position_path_3d(x_nom, x_true=None):
@@ -103,7 +103,7 @@ def plot_position_path_3d(x_nom, x_true=None):
     ax.set_ylabel("east ($y$) [$m$]")
     ax.set_zlabel("up ($-z$) [$m$]")
     fig.subplots_adjust(left=0.1, right=0.9, bottom=0.05, top=0.95)
-    fig.savefig(plot_folder.joinpath("Position3D.pdf"))
+    # fig.savefig(plot_folder.joinpath("Position3D.pdf"))
 
 
 def plot_nis(times, NIS_xyz, NIS_xy, NIS_z, confidence=0.90):
@@ -138,7 +138,7 @@ def plot_nis(times, NIS_xyz, NIS_xy, NIS_z, confidence=0.90):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.1, top=0.93,
                         hspace=0.3)
-    fig.savefig(plot_folder.joinpath('NIS.pdf'))
+    # fig.savefig(plot_folder.joinpath('NIS.pdf'))
 
 
 def plot_nees(times, pos, vel, avec, accm, gyro, confidence=0.90):
@@ -174,4 +174,4 @@ def plot_nees(times, pos, vel, avec, accm, gyro, confidence=0.90):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.06, top=0.94,
                         hspace=0.3)
-    fig.savefig(plot_folder.joinpath('NEES.pdf'))
+    # fig.savefig(plot_folder.joinpath('NEES.pdf'))
