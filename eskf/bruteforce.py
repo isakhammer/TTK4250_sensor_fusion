@@ -67,6 +67,85 @@ def run_eskf(eskf_tuning_params: ESKFTuningParams,
     return x_nom_seq, x_err_gauss_seq, z_gnss_pred_gauss_seq
 
 
+# def run_sim(p: 'ndarray[8]', x_true_data, z_imu_data, z_gnss_data, drone_params):
+#     print(f"Running {config.MAX_TIME} seconds of simulated data set")
+#     tuning_params = ESKFTuningParams(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7])
+#     # tuning_params = tuning_sim.tuning_params_sim
+#     x_nom_init = tuning_sim.x_nom_init_sim
+#     x_err_init = tuning_sim.x_err_init_sim
+
+#     x_nom_seq, x_err_gauss_seq, z_gnss_pred_gauss_seq = run_eskf(
+#         tuning_params, drone_params,
+#         z_imu_data, z_gnss_data,
+#         x_nom_init, x_err_init)
+
+#     x_times, x_true_nom_pairs = get_time_pairs(x_true_data,
+#                                                 x_nom_seq)
+#     errors = np.array([get_error(x_true, x_nom)
+#                     for x_true, x_nom in x_true_nom_pairs])
+
+#     return np.linalg.norm( errors )
+
+
+# class Particle:
+#     p: 'ndarray[8]'
+#     pbesterror: float
+#     pbest: 'ndarray[8]'
+    
+#     def __init__(self):
+#         self.p = np.random.uniform(0,1, size=8)
+#         # self.perror = np.inf
+#         self.pbesterror = np.inf
+#         self.pbest = self.p
+
+# def particle_swarm_optimization_sim():
+#     # initialize particles
+#     k1, k2, k3 = 1,1, 0.001
+#     x_true_data, z_imu_data, z_gnss_data, drone_params = load_sim_data(config.MAX_TIME)
+
+#     N = 100
+#     particles = []
+#     for i in range(N):
+#         particles.append( Particle() )
+
+#     globalbesterror = np.inf
+#     globalbest = np.random.uniform(size=6)
+
+#     for i in range(1000):
+#         # run sim
+#         for particle in particles:
+#             error = run_sim(particle.p, x_true_data, z_imu_data, z_gnss_data, drone_params) 
+#             if  error < particle.pbesterror:
+#                 particle.pbesterror = error
+#                 particle.pbest = particle.p
+#             if  error < globalbesterror:
+#                 globalbesterror = error
+#                 globalbest = particle.p
+
+#             particle.p = k1*( globalbest - particle.p )  + k2*(particle.pbest - particle.p )# + k3* np.random.uniform(0.1,1, size=8)
+
+# def brute_force_sim():
+#     # initialize particles
+#     x_true_data, z_imu_data, z_gnss_data, drone_params = load_sim_data(config.MAX_TIME)
+
+#     N = 10000
+#     self.p = np.random.uniform(0,1, size=(N,8))
+
+#     globalbesterror = np.inf
+#     globalbest = None
+
+#     for i in range(1000):
+#         # run sim
+#         error = run_sim(particle.p, x_true_data, z_imu_data, z_gnss_data, drone_params) 
+#         if  error < particle.pbesterror:
+#             particle.pbesterror = error
+#             particle.pbest = particle.p
+#         if  error < globalbesterror:
+#             globalbesterror = error
+#             globalbest = particle.p
+
+#         particle.p = k1*( globalbest - particle.p )  + k2*(particle.pbest - particle.p )# + k3* np.random.uniform(0.1,1, size=8)
+
 
 def main():
 
@@ -130,4 +209,5 @@ def main():
 
 
 if __name__ == '__main__':
+    # particle_swarm_optimization_sim()
     main()
