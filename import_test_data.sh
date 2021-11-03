@@ -1,10 +1,19 @@
+#!/bin/bash
 
-unzip $( pwd )/slam_project/slam_handout.zip
-cp $( pwd )/slam_handout/tests/test_data.pickle $( pwd )/slam_project/tests/
-rm -Rf $( pwd )/slam_handout
+# Specifying path for project repo
+PROJECT_REPO=$( pwd )/slam_project
 
-FILE=$( pwd )/slam_project/tests/test_data.pickle
+# Unzipping file and specifying to extract inside project repo
+unzip "$PROJECT_REPO"/slam_handout.zip -d "$PROJECT_REPO"
 
+# Copying the pickle file into test file
+cp "$PROJECT_REPO"/slam_handout/tests/test_data.pickle "$PROJECT_REPO"/tests/
+
+# Removing handout
+rm -Rf "$PROJECT_REPO"/slam_handout
+
+# Checks if test data is moved successfully
+FILE="$PROJECT_REPO"/tests/test_data.pickle
 if [ -f "$FILE" ]; then
     echo "$FILE exists."
 else
