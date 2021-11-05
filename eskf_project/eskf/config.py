@@ -3,11 +3,11 @@ import numpy as np
 RUN = 'sim'
 
 # set to False for speedup, skips sanity checks for in dataclasses
-DEBUG = True and __debug__
+DEBUG = False and __debug__
 
 # set to True for speedup as matrix exponential is approximated in
 # ESKF.get_van_loan_matrix()
-DO_APPROXIMATIONS = False
+DO_APPROXIMATIONS = True
 
 # max unning time set to np.inf to run through all the data
-MAX_TIME = 30
+MAX_TIME = 400
