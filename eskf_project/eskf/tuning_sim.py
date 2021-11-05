@@ -6,7 +6,7 @@ from datatypes.eskf_states import NominalState, ErrorStateGauss
 tuning_params_sim = ESKFTuningParams(
     accm_std=100.,
     accm_bias_std=1.,
-    accm_bias_p=1.,
+    accm_bias_p=55.,
 
     gyro_std=100.,
     gyro_bias_std=1.,
@@ -19,8 +19,8 @@ x_nom_init_sim = NominalState(
     np.array([0., 0., 0.]),  # position
     np.array([0., 0., 0.]),  # velocity
     RotationQuaterion.from_euler([0., 0., 0.]),  # orientation
-    np.zeros(3),  # accelerometer bias
-    np.zeros(3),  # gyro bias
+    np.array([1.0, 1.0, 1.0]),  # accelerometer bias
+    np.array([0.0, 0.0, 0.0]),  # gyro bias
     ts=0.)
 
 init_std_sim = np.repeat(repeats=3,  # repeat each element 3 times
