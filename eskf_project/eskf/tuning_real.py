@@ -3,7 +3,7 @@ from quaternion import RotationQuaterion
 from datatypes.eskf_params import ESKFTuningParams
 from datatypes.eskf_states import NominalState, ErrorStateGauss
 
-tuning_params_sim = ESKFTuningParams(
+tuning_params_real = ESKFTuningParams(
     accm_std=0.07 * (1.0 / 60.0),       #m/s/sqrt(h) --> m/s/60*sqrt(sec)
     accm_bias_std=0.05 * (9.81 / 100.0),            #mg --> 9.81/1000 m/s^2
     accm_bias_p=0.000001,
@@ -15,7 +15,7 @@ tuning_params_sim = ESKFTuningParams(
     gnss_std_ne=0.0921,
     gnss_std_d=0.2693)
 
-x_nom_init_sim = NominalState(
+x_nom_init_real = NominalState(
     np.array([0.2, 0.0, -5.0]),  # position
     np.array([20.0, 0.0275, 0.1133]),  # velocity
     RotationQuaterion.from_euler([0.0, 0.0, 0.0]),  # orientation
