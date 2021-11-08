@@ -24,23 +24,23 @@ def plot_state(x_nom_seq: Sequence[NominalState]):
 
     ax[0].plot(times, [x.pos for x in x_nom_seq],
                label=[f"${s}$" for s in "xyz"])
-    ax[0].set_ylabel(r"$\mathbf{\rho}$ [$m$]")
+    ax[0].set_ylabel(r"$rho$ [$m$]")
 
     ax[1].plot(times, [x.vel for x in x_nom_seq],
                label=[f"${s}$" for s in "uvw"])
-    ax[1].set_ylabel(r"$\mathbf{v}$ [$m/s$]")
+    ax[1].set_ylabel(r"$v$ [$m/s$]")
 
     ax[2].plot(times, [np.rad2deg(x.ori.as_euler()) for x in x_nom_seq],
                label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
-    ax[2].set_ylabel(r"$\mathbf{q}$ (as euler) [deg]")
+    ax[2].set_ylabel(r"$q$ (as euler) [deg]")
 
     ax[3].plot(times, [x.accm_bias for x in x_nom_seq],
                label=[f"${s}$" for s in "xyz"])
-    ax[3].set_ylabel(r"$\mathbf{a}_b$ [$m/s^2$]")
+    ax[3].set_ylabel(r"$a_b$ [$m/s^2$]")
 
     ax[4].plot(times, [np.rad2deg(x.gyro_bias) for x in x_nom_seq],
                label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
-    ax[4].set_ylabel(r"$\mathbf{\omega}_b$ [deg$/s$]")
+    ax[4].set_ylabel(r"$omega_b$ [deg$/s$]")
 
     ax[-1].set_xlabel("$t$ [$s$]")
 
@@ -59,23 +59,23 @@ def plot_errors(times: Sequence[float], errors: Sequence['ndarray[15]']):
 
     ax[0].plot(times, errors[:, :3],
                label=[f"${s}$" for s in "xyz"])
-    ax[0].set_ylabel(r"$\mathbf{\delta \rho}$ [$m$]")
+    ax[0].set_ylabel(r"delta_rho[$m$]")
 
     ax[1].plot(times, errors[:, 3:6],
                label=[f"${s}$" for s in "uvw"])
-    ax[1].set_ylabel(r"$\mathbf{\delta v}$ [$m/s$]")
+    ax[1].set_ylabel(r"delta_v [$m/s$]")
 
     ax[2].plot(times, np.rad2deg(errors[:, 6:9]),
-               label=[f"${s}$" for s in [r"\phi", r"\theta", r"\psi"]])
-    ax[2].set_ylabel(r"$\mathbf{\delta \Theta}$ [deg]")
+               label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
+    ax[2].set_ylabel(r"delta_Theta [deg]")
 
     ax[3].plot(times, errors[:, 9:12],
                label=[f"${s}$" for s in "xyz"])
-    ax[3].set_ylabel(r"$\mathbf{\delta a}_b$ [$m/s^2$]")
+    ax[3].set_ylabel(r"delta_a_b [$m/s^2$]")
 
     ax[4].plot(times, np.rad2deg(errors[:, 12:15]),
-               label=[f"${s}$" for s in [r"\phi", r"\theta", r"\psi"]])
-    ax[4].set_ylabel(r"$\mathbf{ \delta\omega}_b$ [deg$/s$]")
+               label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
+    ax[4].set_ylabel(r"delta_omega_b [deg$/s$]")
 
     ax[-1].set_xlabel("$t$ [$s$]")
 
@@ -95,9 +95,9 @@ def plot_position_path_3d(x_nom, x_true=None):
     fig.canvas.manager.set_window_title("Position 3D")
     if x_true:
         ax.plot(*np.array([x.pos * np.array([1, 1, -1]) for x in x_true]).T,
-                c='C1', label=r"$\mathbf{\rho}_t$")
+                c='C1', label=r"$rho_t$")
     ax.plot(*np.array([x.pos * np.array([1, 1, -1]) for x in x_nom]).T,
-            c='C0', label=r"$\mathbf{\rho}$")
+            c='C0', label=r"$rho$")
     ax.legend(loc="upper right")
     ax.set_xlabel("north ($x$) [$m$]")
     ax.set_ylabel("east ($y$) [$m$]")
@@ -148,8 +148,8 @@ def plot_nees(times, pos, vel, avec, accm, gyro, confidence=0.90):
 
     enu = enumerate(zip(
         [pos, vel, avec, accm, gyro],
-        [r"\mathbf{\rho}", r"\mathbf{v}", r"\mathbf{\Theta}",
-         r"\mathbf{a}_b", r"\mathbf{\omega}_b"]))
+        [r"rho", r"v", r"Theta",
+         r"a_b", r"omega_b"]))
     for i, (NEES, name) in enu:
         n_total = len(NEES)
         n_below = len([None for value in NEES if value < ci_lower])
