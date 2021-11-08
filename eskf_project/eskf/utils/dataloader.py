@@ -27,7 +27,9 @@ def load_sim_data(max_time=np.inf):
 
     lever_arm = loaded_data["leverarm"].ravel()
     S_a = loaded_data["S_a"]
+    #S_a = np.eye(3);
     S_g = loaded_data["S_g"]
+    #S_g = np.eye(3);
 
     x_nom_true_data = [NominalState(x[:3], x[3:6],
                                     RotationQuaterion(x[6], x[7:10]),
@@ -60,7 +62,9 @@ def load_real_data(max_time=np.inf):
 
     lever_arm = loaded_data["leverarm"].ravel()
     S_a = loaded_data["S_a"]
+    #S_a = np.eye(3);
     S_g = loaded_data["S_g"]
+    #S_g = np.eye(3);
 
     start_time = 302850
     imu_measurements = [ImuMeasurement(ts-start_time, acc, gyro)
