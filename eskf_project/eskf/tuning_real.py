@@ -17,7 +17,7 @@ tuning_params_real = ESKFTuningParams(
 
 x_nom_init_real = NominalState(
     np.array([0.2, 0.0, -5.0]),  # position
-    np.array([20.0, 0.0275, 0.1133]),  # velocity
+    np.array([20.0, 0.0, 0.0]),  # velocity
     RotationQuaterion.from_euler([0.0, 0.0, 0.0]),  # orientation
     np.array([0.0, 0.0, 0.0]),  # accelerometer bias
     np.array([0.0, 0.0, 0.0]),  # gyro bias
@@ -26,7 +26,7 @@ x_nom_init_real = NominalState(
 init_std_real = np.repeat(repeats=3,  # repeat each element 3 times
                           a=[1.,  # position
                              1.,  # velocity
-                             np.deg2rad(1),  # angle vector
+                             np.deg2rad(-10),  # angle vector
                              1.,  # accelerometer bias
                              0.01])  # gyro bias
 
