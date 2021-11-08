@@ -9,7 +9,7 @@ from datatypes.eskf_states import NominalState
 import config
 from scipy.stats import chi2
 
-plot_folder = Path(__file__).parents[1].joinpath('plots')
+plot_folder = Path(__file__).parents[1].joinpath('plots_'+str(config.RUN))
 plot_folder.mkdir(exist_ok=True)
 
 plt.rcParams["axes.grid"] = True
@@ -31,7 +31,7 @@ def plot_state(x_nom_seq: Sequence[NominalState]):
     ax[1].set_ylabel(r"$\mathbf{v}$ [$m/s$]")
 
     ax[2].plot(times, [np.rad2deg(x.ori.as_euler()) for x in x_nom_seq],
-               label=[f"${s}$" for s in [r"\phi", r"\theta", r"\psi"]])
+               label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
     ax[2].set_ylabel(r"$\mathbf{q}$ (as euler) [deg]")
 
     ax[3].plot(times, [x.accm_bias for x in x_nom_seq],
@@ -39,7 +39,7 @@ def plot_state(x_nom_seq: Sequence[NominalState]):
     ax[3].set_ylabel(r"$\mathbf{a}_b$ [$m/s^2$]")
 
     ax[4].plot(times, [np.rad2deg(x.gyro_bias) for x in x_nom_seq],
-               label=[f"${s}$" for s in [r"\phi", r"\theta", r"\psi"]])
+               label=[f"${s}$" for s in [r"phi", r"theta", r"psi"]])
     ax[4].set_ylabel(r"$\mathbf{\omega}_b$ [deg$/s$]")
 
     ax[-1].set_xlabel("$t$ [$s$]")
@@ -50,7 +50,7 @@ def plot_state(x_nom_seq: Sequence[NominalState]):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.08, top=0.97,
                         hspace=0.1)
-    # fig.savefig(plot_folder.joinpath("States.pdf"))
+    fig.savefig(plot_folder.joinpath("States.pdf"))
 
 
 def plot_errors(times: Sequence[float], errors: Sequence['ndarray[15]']):
@@ -85,7 +85,7 @@ def plot_errors(times: Sequence[float], errors: Sequence['ndarray[15]']):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.08, top=0.97,
                         hspace=0.1)
-    # fig.savefig(plot_folder.joinpath("Errors.pdf"))
+    fig.savefig(plot_folder.joinpath("Errors.pdf"))
 
 
 def plot_position_path_3d(x_nom, x_true=None):
@@ -103,7 +103,7 @@ def plot_position_path_3d(x_nom, x_true=None):
     ax.set_ylabel("east ($y$) [$m$]")
     ax.set_zlabel("up ($-z$) [$m$]")
     fig.subplots_adjust(left=0.1, right=0.9, bottom=0.05, top=0.95)
-    # fig.savefig(plot_folder.joinpath("Position3D.pdf"))
+    fig.savefig(plot_folder.joinpath("Position3D.pdf"))
 
 
 def plot_nis(times, NIS_xyz, NIS_xy, NIS_z, confidence=0.90):
@@ -138,7 +138,7 @@ def plot_nis(times, NIS_xyz, NIS_xy, NIS_z, confidence=0.90):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.1, top=0.93,
                         hspace=0.3)
-    # fig.savefig(plot_folder.joinpath('NIS.pdf'))
+    fig.savefig(plot_folder.joinpath('NIS.pdf'))
 
 
 def plot_nees(times, pos, vel, avec, accm, gyro, confidence=0.90):
@@ -174,4 +174,4 @@ def plot_nees(times, pos, vel, avec, accm, gyro, confidence=0.90):
     fig.align_ylabels(ax)
     fig.subplots_adjust(left=0.15, right=0.97, bottom=0.06, top=0.94,
                         hspace=0.3)
-    # fig.savefig(plot_folder.joinpath('NEES.pdf'))
+    fig.savefig(plot_folder.joinpath('NEES.pdf'))
