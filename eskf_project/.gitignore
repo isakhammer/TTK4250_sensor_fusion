@@ -3,4 +3,5 @@ eskf/datatypes/__pycache__
 eskf/solution/__pycache__
 eskf/solution/pytransform/__pycache__
 eskf/utils/__pycache__
+tests/__pycache__
 
