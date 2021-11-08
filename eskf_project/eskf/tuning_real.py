@@ -26,8 +26,8 @@ x_nom_init_real = NominalState(
 init_std_real = np.repeat(repeats=3,  # repeat each element 3 times
                           a=[1.,  # position
                              1.,  # velocity
-                             np.deg2rad(10),  # angle vector
-                             0.5,  # accelerometer bias
-                             0.01])  # gyro bias
+                             np.deg2rad(15),  # angle vector
+                             0.05,  # accelerometer bias
+                             0.0001])  # gyro bias
 
 x_err_init_real = ErrorStateGauss(np.zeros(15), np.diag(init_std_real**2), 0.)
