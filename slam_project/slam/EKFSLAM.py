@@ -92,8 +92,13 @@ class EKFSLAM:
         np.ndarray
             The Jacobian of f wrt. u.
         """
+        Fu = np.array([
+            [np.cos(x[2]), -np.sin(x[2]),  0],
+            [np.sin(x[2]), np.cos(x[2]),  0],
+            [0 , 0, 1]
+        ])
         # TODO replace this with your own code
-        Fu = solution.EKFSLAM.EKFSLAM.Fu(self, x, u)
+        # Fu = solution.EKFSLAM.EKFSLAM.Fu(self, x, u)
         return Fu
 
         Fu = None  # TODO, eq (11.14)
