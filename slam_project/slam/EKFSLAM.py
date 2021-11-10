@@ -33,8 +33,15 @@ class EKFSLAM:
         np.ndarray, shape = (3,)
             the predicted state
         """
+
+        xpred = np.array([
+            x[0] + u[0]*np.cos(x[2]) - u[1]*np.sin(x[2]) ,
+            x[1] + u[0]*np.sin(x[2]) + u[1]*np.sin(x[2]),
+            x[2] + u[2]
+        ])
+
         # TODO replace this with your own code
-        xpred = solution.EKFSLAM.EKFSLAM.f(self, x, u)
+        # xpred = solution.EKFSLAM.EKFSLAM.f(self, x, u)
         return xpred
 
         # TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
