@@ -64,8 +64,13 @@ class EKFSLAM:
         np.ndarray
             The Jacobian of f wrt. x.
         """
+        Fx = np.array([
+            [1, 0, - u[0]*np.sin(x[2]) - u[1]*np.cos(x[2]) ],
+            [ 0, 1, u[0]*np.cos(x[2]) - u[1]*np.sin(x[2]) ],
+            [0 , 0, 1]
+        ])
         # TODO replace this with your own code
-        Fx = solution.EKFSLAM.EKFSLAM.Fx(self, x, u)
+        # Fx = solution.EKFSLAM.EKFSLAM.Fx(self, x, u)
         return Fx
 
         Fx = None  # TODO, eq (11.13)
