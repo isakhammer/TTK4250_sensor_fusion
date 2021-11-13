@@ -44,10 +44,10 @@ class EKFSLAM:
         # xpred = solution.EKFSLAM.EKFSLAM.f(self, x, u)
         return xpred
 
-        # TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
-        xpred = None
+        # # TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
+        # xpred = None
 
-        return xpred
+        # return xpred
 
     def Fx(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         """Calculate the Jacobian of f with respect to x.
@@ -96,16 +96,14 @@ class EKFSLAM:
             [np.sin(x[2]), np.cos(x[2]),  0],
             [0 , 0, 1]
         ])
+        # Fu = None  # TODO, eq (11.14)
         # TODO replace this with your own code
         # Fu = solution.EKFSLAM.EKFSLAM.Fu(self, x, u)
         return Fu
 
-        Fu = None  # TODO, eq (11.14)
-
-        return Fu
-
     def predict(
-        self, eta: np.ndarray, P: np.ndarray, z_odo: np.ndarray
+        self,
+        eta: np.ndarray, P: np.ndarray, z_odo: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Predict the robot state using the zOdo as odometry the corresponding state&map covariance.
 
@@ -123,8 +121,10 @@ class EKFSLAM:
         Tuple[np.ndarray, np.ndarray], shapes= (3 + 2*#landmarks,), (3 + 2*#landmarks,)*2
             predicted mean and covariance of eta.
         """
-        etapred, P = solution.EKFSLAM.EKFSLAM.predict(self, eta, P, z_odo)
-        return etapred, P
+
+        # TODO: remove
+        # etapred, P = solution.EKFSLAM.EKFSLAM.predict(self, eta, P, z_odo)
+        # return etapred, P
 
         # check inout matrix
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P input"
@@ -136,10 +136,14 @@ class EKFSLAM:
         ), "EKFSLAM.predict: input eta and P shape do not match"
         etapred = np.empty_like(eta)
 
+        # define notions
         x = eta[:3]
-        etapred[:3] = None  # TODO robot state prediction
-        etapred[3:] = None  # TODO landmarks: no effect
+        u = z_odo 
+        m = eta[3:]
 
+        # Iteration
+        etapred[:3] = self.f(x,u)  # x_k0 multiply u_k TODO robot state prediction
+        etapred[3:] = m            # m TODO landmarks: no effect
         Fx = self.Fx(x,u)  # TODO
         Fu = self.Fu(x,u)  # TODO
 
@@ -148,9 +152,13 @@ class EKFSLAM:
         # cov matrix layout:
         # [[P_xx, P_xm],
         # [P_mx, P_mm]]
-        P[:3, :3] = None  # TODO robot cov prediction
-        P[:3, 3:] = None  # TODO robot-map covariance prediction
-        P[3:, :3] = None  # TODO map-robot covariance: transpose of the above
+        
+
+        # Pxx = Fx Pxx FxT + I Qxx I.T
+        P[:3, :3] = Fx@P[:3, :3]@Fx.T + self.Q[:3, :3]  # TODO robot cov prediction
+        P[:3, 3:] = np.zeros( P[:3, 3:].shape )         # TODO robot-map covariance prediction
+        P[3:, :3] = np.zeros( P[3:, :3].shape )         # TODO map-robot covariance: transpose of the above
+        P[3:, 3:] = np.zeros( P[3:, 3:].shape )          # TODO map-robot covariance: transpose of the above
 
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P"
         assert np.all(
@@ -177,8 +185,8 @@ class EKFSLAM:
         """
 
         # TODO replace this with your own code
-        zpred = solution.EKFSLAM.EKFSLAM.h(self, eta)
-        return zpred
+        # zpred = solution.EKFSLAM.EKFSLAM.h(self, eta)
+        # return zpred
 
         # extract states and map
         x = eta[0:3]
@@ -189,7 +197,9 @@ class EKFSLAM:
 
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
-        delta_m = None  # TODO, relative position of landmark to sensor on robot in world frame
+
+        p = x[:2] # position in world frame
+        delta_m += p  # TODO, relative position of landmark to sensor on robot in world frame
 
         # TODO, predicted measurements in cartesian coordinates, beware sensor offset for VP
         zpredcart = None
