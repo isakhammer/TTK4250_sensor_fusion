@@ -64,6 +64,7 @@ class EKFSLAM:
         np.ndarray
             The Jacobian of f wrt. x.
         """
+        # Fx = None  # TODO, eq (11.13)
         Fx = np.array([
             [1, 0, - u[0]*np.sin(x[2]) - u[1]*np.cos(x[2]) ],
             [ 0, 1, u[0]*np.cos(x[2]) - u[1]*np.sin(x[2]) ],
@@ -71,9 +72,7 @@ class EKFSLAM:
         ])
         # TODO replace this with your own code
         # Fx = solution.EKFSLAM.EKFSLAM.Fx(self, x, u)
-        return Fx
-
-        Fx = None  # TODO, eq (11.13)
+        # return Fx
 
         return Fx
 
@@ -141,8 +140,8 @@ class EKFSLAM:
         etapred[:3] = None  # TODO robot state prediction
         etapred[3:] = None  # TODO landmarks: no effect
 
-        Fx = None  # TODO
-        Fu = None  # TODO
+        Fx = self.Fx(x,u)  # TODO
+        Fu = self.Fu(x,u)  # TODO
 
         # evaluate covariance prediction in place to save computation
         # only robot state changes, so only rows and colums of robot state needs changing
