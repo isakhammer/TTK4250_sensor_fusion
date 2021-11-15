@@ -197,7 +197,7 @@ class EKFSLAM:
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
         p = x[:2] # position in world frame
-        delta_m = m - (p + R.T @self.sensor_offset)  # TODO, relative position of landmark to sensor on robot in world frame
+        delta_m = m - (p + Rot.T @self.sensor_offset)  # TODO, relative position of landmark to sensor on robot in world frame
 
         # TODO, predicted measurements in cartesian coordinates, beware sensor offset for VP
         zpredcart = Rot@delta_m
@@ -245,7 +245,7 @@ class EKFSLAM:
         Rot = rotmat2d(x[2])
 
         # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
-        delta_m = None
+        delta_m = m - (p + Rot.T @self.sensor_offset)
 
         # TODO, (2, #measurements), each measured position in cartesian coordinates like
         zc = None
