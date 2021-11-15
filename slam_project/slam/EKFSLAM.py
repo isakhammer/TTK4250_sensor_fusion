@@ -245,17 +245,20 @@ class EKFSLAM:
         Rot = rotmat2d(x[2])
 
         # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
-        delta_m = m - (p + Rot.T @self.sensor_offset)
+        delta_m = m - (x[:2] + Rot.T @self.sensor_offset)
 
         # TODO, (2, #measurements), each measured position in cartesian coordinates like
-        zc = None
+        zc = m + delta_m
         # [x coordinates;
         #  y coordinates]
 
-        zpred = None  # TODO (2, #measurements), predicted measurements, like
+
+        zr = None  # TODO, ranges
+
+        zpred = np.vstack([zr, zc]) # TODO (2, #measurements), predicted measurements, like
         # [ranges;
         #  bearings]
-        zr = None  # TODO, ranges
+
 
         Rpihalf = rotmat2d(np.pi / 2)
 
@@ -279,6 +282,7 @@ class EKFSLAM:
             inds = slice(ind, ind + 2)
 
             # TODO: Set H or Hx and Hm here
+            Hx[inds] = None # ?? 
 
         # TODO: You can set some assertions here to make sure that some of the structure in H is correct
         return H
