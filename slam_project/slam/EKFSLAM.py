@@ -154,10 +154,9 @@ class EKFSLAM:
         # [P_mx, P_mm]]
         
         # Pxx = Fx Pxx FxT + I Qxx I.T, P_mx=0 ?
-        P[:3, :3] = Fx@P[:3, :3]@Fx.T + Fu@self.Q[:3, :3]@Fu  # TODO robot cov prediction
-        P[:3, 3:] =  P[:3, 3:]         # TODO robot-map covariance prediction
-        P[3:, :3] =  P[3:, :3]         # TODO map-robot covariance: transpose of the above
-        P[3:, 3:] =  P[3:, 3:]          
+        P[:3, :3] = Fx@P[:3, :3]@Fx.T + Fu@self.Q@Fu.T  # TODO robot cov prediction
+        P[:3, 3:] =  Fx@P[:3, 3:]         # TODO robot-map covariance prediction
+        P[3:, :3] =  P[:3, 3:].T         # TODO map-robot covariance: transpose of the above
 
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P"
         assert np.all(
