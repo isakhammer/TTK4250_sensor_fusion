@@ -142,10 +142,10 @@ class EKFSLAM:
         m = eta[3:]
 
         # Iteration
-        etapred[:3] = self.f(x,u)  # x_k0 multiply u_k TODO robot state prediction
-        etapred[3:] = m            # m TODO landmarks: no effect
-        Fx = self.Fx(x,u)  # TODO
-        Fu = self.Fu(x,u)  # TODO
+        etapred[:3] = self.f(x,u)   # x_k0 multiply u_k TODO robot state prediction
+        etapred[3:] = m             # m TODO landmarks: no effect
+        Fx = self.Fx(x,u)           # TODO
+        Fu = self.Fu(x,u)           # TODO
 
         # evaluate covariance prediction in place to save computation
         # only robot state changes, so only rows and colums of robot state needs changing
@@ -153,12 +153,11 @@ class EKFSLAM:
         # [[P_xx, P_xm],
         # [P_mx, P_mm]]
         
-
-        # Pxx = Fx Pxx FxT + I Qxx I.T
-        P[:3, :3] = Fx@P[:3, :3]@Fx.T + self.Q[:3, :3]  # TODO robot cov prediction
-        P[:3, 3:] = np.zeros( P[:3, 3:].shape )         # TODO robot-map covariance prediction
-        P[3:, :3] = np.zeros( P[3:, :3].shape )         # TODO map-robot covariance: transpose of the above
-        P[3:, 3:] = np.zeros( P[3:, 3:].shape )          # TODO map-robot covariance: transpose of the above
+        # Pxx = Fx Pxx FxT + I Qxx I.T, P_mx=0 ?
+        P[:3, :3] = Fx@P[:3, :3]@Fx.T + Fu@self.Q[:3, :3]@Fu  # TODO robot cov prediction
+        P[:3, 3:] =  P[:3, 3:]         # TODO robot-map covariance prediction
+        P[3:, :3] =  P[3:, :3]         # TODO map-robot covariance: transpose of the above
+        P[3:, 3:] =  P[3:, 3:]          
 
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P"
         assert np.all(
@@ -197,16 +196,16 @@ class EKFSLAM:
 
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
-
         p = x[:2] # position in world frame
-        delta_m += p  # TODO, relative position of landmark to sensor on robot in world frame
+        delta_m = m - (p + R.T @self.sensor_offset)  # TODO, relative position of landmark to sensor on robot in world frame
 
         # TODO, predicted measurements in cartesian coordinates, beware sensor offset for VP
-        zpredcart = None
+        zpredcart = Rot@delta_m
 
-        zpred_r = None  # TODO, ranges
-        zpred_theta = None  # TODO, bearings
-        zpred = None  # TODO, the two arrays above stacked on top of each other vertically like
+        # not completely sure
+        zpred_r     = np.linalg.norm(zpredcart, axis=1)  # TODO, ranges
+        zpred_theta = np.arctan2( zpredcart[:,0], zpredcart[:,1] )  # TODO, bearings
+        zpred       = np.vstack([ zpred_r, zpred_theta ])   # TODO, the two arrays above stacked on top of each other vertically like
         # [ranges;
         #  bearings]
         # into shape (2, #lmrk)
