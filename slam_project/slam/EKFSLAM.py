@@ -341,7 +341,7 @@ class EKFSLAM:
             Gz = None  # TODO
 
             # TODO, Gz * R * Gz^T, transform measurement covariance from polar to cartesian coordinates
-            Rall[inds, inds] = None
+            Rall[inds, inds] = Gz@rot@Gz.T
 
         assert len(lmnew) % 2 == 0, "SLAM.add_landmark: lmnew not even length"
         etaadded = None  # TODO, append new landmarks to state vector
