@@ -244,16 +244,15 @@ class EKFSLAM:
         Rot = rotmat2d(x[2])
 
         # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
-        delta_m = m - Rot@self.sensor_offset[:,None]
+        delta_m =  m - x[:2, None]
 
         # TODO, (2, #measurements), each measured position in cartesian coordinates like
-        zc = delta_m - x[0:2, None] 
+        zc = delta_m - Rot @ self.sensor_offset[:, None]
         # [x coordinates;
         #  y coordinates]
 
-
-        # what is this????
         zpred = self.h(eta).reshape(-1,2).T # TODO (2, #measurements), predicted measurements, like
+        
         zr = zpred[0]
         # [ranges;
         #  bearings]
@@ -278,9 +277,10 @@ class EKFSLAM:
             ind = 2 * i  # starting postion of the ith landmark into H
             # the inds slice for the ith landmark into H
             inds = slice(ind, ind + 2)
-            jac_z_cb[:,2] = -Rpihalf@delta_m[:,i]
-            Hx[ind] = (zc[:,i]/zr[i])@jac_z_cb
-            Hx[ind +1] = (zc[:,i]/zr[i]**2)@Rpihalf.T@jac_z_cb
+
+            jac_z_cb[:,2] = -Rpihalf @ delta_m[:,i]
+            Hx[ind] = (zc[:,i] / zr[i]) @ jac_z_cb
+            Hx[ind + 1] = (zc[:,i] / zr[i]**2) @ Rpihalf.T @ jac_z_cb
 
             # TODO: Set H or Hx and Hm here
             Hm[inds,inds] = -Hx[inds, :2]
