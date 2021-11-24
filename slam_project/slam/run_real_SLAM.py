@@ -76,6 +76,9 @@ except Exception as e:
 
 
 def main():
+
+    print ('Real Data')
+
     # %% Load data
     victoria_park_foler = Path(
         __file__).parents[1].joinpath("data/victoria_park")
@@ -110,19 +113,40 @@ def main():
 
     car = Car(L, H, a, b)
 
-    sigmas = 0.025 * np.array([0.0001, 0.00005, 6 * np.pi / 180])  # TODO tune
+
+    #Original tuning
+    sigmas = 0.025 * np.array([0.0001, 0.00005, 6 * np.pi / 180])  # Original TODO tune
+    #sigmas = 0.055 * np.array([0.0001, 0.00005, 6 * np.pi / 180])  # Giving the bias tuning TODO tune
+    #sigmas = 0.055 * np.array([0.0001, 0.00005, 6 * np.pi / 330])  # Best tuning TODO tune
+
+    #Not touched (makes it easier)
     CorrCoeff = np.array([[1, 0, 0], [0, 1, 0.9], [0, 0.9, 1]])
     Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
-    R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # TODO tune
+
+    #R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # Original TODO tune
+    #R = np.diag([0.065, 1 * np.pi / 210]) ** 2  # Giving the bias tuning TODO tune
+    #R = np.diag([0.08, 1 * np.pi / 210]) ** 2  # Best tuning TODO tune
+    R = 10 * np.diag([0.1, 1 * np.pi / 180]) ** 2  # Good error, shit consistency tuning TODO tune
 
     # first is for joint compatibility, second is individual
-    JCBBalphas = np.array([0.00001, 1e-6])  # TODO tune
+    JCBBalphas = np.array([1e-5, 1e-6])  # Original TODO tune
+    #JCBBalphas = np.array([1e-2, 1e-3])  # Best tuning, but slower (especially at it:~6500 and it:~8050): Have patience TODO tune
+
+
+    print()
+    print('Q = ',Q)
+    print()
+    print('R = ',R)
+    print()
+    print('Alphas = ',JCBBalphas)
+    print()
+
 
     sensorOffset = np.array([car.a + car.L, car.b])
     doAsso = True
 
     slam = EKFSLAM(Q, R, do_asso=doAsso, alphas=JCBBalphas,
-                   sensor_offset=sensorOffset)
+                    sensor_offset=sensorOffset)
 
     # For consistency testing
     alpha = 0.05
@@ -145,11 +169,15 @@ def main():
     t = timeOdo[0]
 
     # %%  run
-    N = 1000  # K
+    N = K // 5  # K
 
     doPlot = False
 
     lh_pose = None
+
+    #For ANIS later: Initialize all NIS as invalid, i.e. nan
+    num_asso_sum = 0
+    NISes = np.full(N, np.nan)
 
     if doPlot:
         fig, ax = plt.subplots(num=1, clear=True)
@@ -182,18 +210,19 @@ def main():
             # ? reset time to this laser time for next post predict
             t = timeLsr[mk]
             odo = odometry(speed[k + 1], steering[k + 1], dt, car)
-            eta, P =  # TODO predict
+            eta, P = slam.predict(eta, P.copy(), odo) # TODO predict
 
             z = detectTrees(LASER[mk])
-            eta, P, NIS[mk], a[mk] =  # TODO update
+            eta, P, NIS[mk], a[mk] = slam.update(eta,P.copy(),z) # TODO update
 
             num_asso = np.count_nonzero(a[mk] > -1)
 
             if num_asso > 0:
                 NISnorm[mk] = NIS[mk] / (2 * num_asso)
-                CInorm[mk] = np.array(chi2.interval(confidence_prob, 2 * num_asso)) / (
-                    2 * num_asso
-                )
+                CInorm[mk] = np.array(chi2.interval(confidence_prob, 2 * num_asso)) / (2 * num_asso)
+                CI[mk] = chi2.interval(confidence_prob, 2 * num_asso)
+                num_asso_sum += num_asso
+                NISes[mk] = NIS[mk]
             else:
                 NISnorm[mk] = 1
                 CInorm[mk].fill(1)
@@ -231,9 +260,15 @@ def main():
             odo = odometry(speed[k + 1], steering[k + 1], dt, car)
             eta, P = slam.predict(eta, P, odo)
 
+    #Check eta size
+    print()
+    print("eta size:",eta.size)
+    print()
+
     # %% Consistency
 
     # NIS
+    
     insideCI = (CInorm[:mk, 0] <= NISnorm[:mk]) * \
         (NISnorm[:mk] <= CInorm[:mk, 1])
 
@@ -241,8 +276,9 @@ def main():
     ax3.plot(CInorm[:mk, 0], "--")
     ax3.plot(CInorm[:mk, 1], "--")
     ax3.plot(NISnorm[:mk], lw=0.5)
+    ax3.grid(visible=1)
+    ax3.set_title(f"NISnorm, {insideCI.mean()*100:.2f}% inside CI")
 
-    ax3.set_title(f"NIS, {insideCI.mean()*100:.2f}% inside CI")
 
     # %% slam
 
@@ -256,17 +292,48 @@ def main():
             label="GPS",
         )
         ax5.plot(*odox[:N, :2].T, label="odom")
-        ax5.grid()
+        ax5.grid(visible=1)
         ax5.set_title("GPS vs odometry integration")
-        ax5.legend()
+        #ax5.legend()
 
     # %%
     fig6, ax6 = plt.subplots(num=6, clear=True)
-    ax6.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x")
-    ax6.plot(*xupd[mk_first:mk, :2].T)
+    ax6.plot(*xupd[mk_first:mk, :2].T,label="Estimate")
+    ax6.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x",label="Landmarks")
+    ax6.grid(visible=1)
     ax6.set(
-        title=f"Steps {k}, laser scans {mk-1}, landmarks {len(eta[3:])//2},\nmeasurements {z.shape[0]}, num new = {np.sum(a[mk] == -1)}"
+        #title=f"Steps {k}, laser scans {mk-1}, landmarks {len(eta[3:])//2},\nmeasurements {z.shape[0]}, num new = {np.sum(a[mk] == -1)}"
     )
+    #ax6.legend()
+
+    #As I commented it out from the title of the plot for nice formatting
+    print(f"Steps {k}, laser scans {mk-1}, landmarks {len(eta[3:])//2},\nmeasurements {z.shape[0]}, num new = {np.sum(a[mk] == -1)}")
+    print()
+
+    fig7, ax7 = plt.subplots(num=7, clear=True)
+    ax7.scatter(
+        Lo_m[timeGps < timeOdo[N - 1]],
+        La_m[timeGps < timeOdo[N - 1]],
+        c="r",
+        marker=".",
+        label="GPS",
+    )
+    ax7.plot(*xupd[mk_first:mk, :2].T, label="Estimate")
+    ax7.grid(visible=1)
+    #ax7.set_title("GPS vs estimate")
+    #ax7.legend()
+
+
+
+    #ANIS
+    valid_NIS = ~np.isnan(NISes)
+    NISes = NISes[valid_NIS]
+    CI_ANIS = np.array(chi2.interval(confidence_prob, num_asso_sum * 2)) / NISes.size
+    ANIS = NISes.mean()
+    print(f"CI ANIS {CI_ANIS}")
+    print(f"ANIS {ANIS}")
+    print()
+
     plt.show()
 
 

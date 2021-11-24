@@ -76,6 +76,9 @@ except Exception as e:
 
 
 def main():
+
+    print ('Simulator Data')
+
     # %% Load data
     datafile = Path(__file__).parents[1].joinpath("data/simulatedSLAM")
     simSLAM_ws = loadmat(str(datafile))
@@ -97,17 +100,24 @@ def main():
     M = len(landmarks)
 
     # %% Initilize
-    Q = np.diag([0.1, 0.1, 1 * np.pi / 180]) ** 2  # TODO tune
-    R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # TODO tune
+    Q = np.diag([0.1, 0.1, 1 * np.pi / 180]) ** 2  # Original TODO tune
+    #Q = np.diag([0.05, 0.05, 1 * np.pi / 360]) ** 2  # BEST TODO tune
+    #Q = np.diag([0.3, 0.3, 1.5 * np.pi / 180]) ** 2  # Good error, bad confidence TODO tune
+
+    R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # Original TODO tune
+    #R = np.diag([0.07, 1 * np.pi / 200]) ** 2  # BEST TODO tune
+    #R = np.diag([0.11, 1.1 * np.pi / 180]) ** 2  # Good error, bad confidence TODO tune
+    #R = np.diag([1, 6 * np.pi / 180]) ** 2  # Large cov TODO tune
 
     # first is for joint compatibility, second is individual
-    JCBBalphas = np.array([0.001, 0.0001])  # TODO tune
+    JCBBalphas = np.array([0.001, 0.0001])  # Original TODO tune (and good error, bad confidence)
+    #JCBBalphas = np.array([1e-4, 1e-5])  # BEST TODO tune
 
     doAsso = True
 
 
-# these can have a large effect on runtime either through the number of landmarks created
-# or by the size of the association search space.
+    # these can have a large effect on runtime either through the number of landmarks created
+    # or by the size of the association search space.
 
     slam = EKFSLAM(Q, R, do_asso=doAsso, alphas=JCBBalphas)
 
@@ -125,6 +135,7 @@ def main():
 
     # For consistency testing
     alpha = 0.05
+    confidence_prob = 1 - alpha
 
     # init
     eta_pred[0] = poseGT[0]  # we start at the correct position for reference
@@ -135,7 +146,7 @@ def main():
     # plotting
 
     doAssoPlot = False
-    playMovie = True
+    playMovie = False
     if doAssoPlot:
         figAsso, axAsso = plt.subplots(num=1, clear=True)
 
@@ -144,15 +155,19 @@ def main():
 
     print("starting sim (" + str(N) + " iterations)")
 
+    #For ANIS later: Initialize all NIS as invalid, i.e. nan
+    num_asso_sum = 0
+    NISes = np.full(N, np.nan)
+
     for k, z_k in tqdm(enumerate(z[:N]), total=N):
         # See top: need to do "double indexing" to get z at time step k
         # Transpose is to stack measurements rowwise
         # z_k = z[k][0].T
 
-        eta_hat[k], P_hat[k], NIS[k], a[k] =  # TODO update
+        eta_hat[k], P_hat[k], NIS[k], a[k] =  slam.update(eta_pred[k],P_pred[k],z_k) # TODO update
 
         if k < K - 1:
-            eta_pred[k + 1], P_pred[k + 1] =  # TODO predict
+            eta_pred[k + 1], P_pred[k + 1] =  slam.predict(eta_hat[k],P_hat[k],odometry[k]) # TODO predict
 
         assert (
             eta_hat[k].shape[0] == P_hat[k].shape[0]
@@ -160,16 +175,19 @@ def main():
 
         num_asso = np.count_nonzero(a[k] > -1)
 
-        CI[k] = chi2.interval(alpha, 2 * num_asso)
+        CI[k] = chi2.interval(confidence_prob, 2 * num_asso)
+        
 
         if num_asso > 0:
             NISnorm[k] = NIS[k] / (2 * num_asso)
             CInorm[k] = CI[k] / (2 * num_asso)
+            num_asso_sum += num_asso
+            NISes[k] = NIS[k]
         else:
             NISnorm[k] = 1
             CInorm[k].fill(1)
 
-        NEESes[k] =  # TODO, use provided function slam.NEESes
+        NEESes[k] = slam.NEESes(eta_hat[k][:3],P_hat[k][:3,:3],poseGT[k]) # TODO, use provided function slam.NEESes
 
         if doAssoPlot and k > 0:
             axAsso.clear()
@@ -221,13 +239,15 @@ def main():
     ax2.plot(*poseGT.T[:2], c="r", label="gt")
     ax2.plot(*pose_est.T[:2], c="g", label="est")
     ax2.plot(*ellipse(pose_est[-1, :2], P_hat[N - 1][:2, :2], 5, 200).T, c="g")
-    ax2.set(title="results", xlim=(mins[0], maxs[0]), ylim=(mins[1], maxs[1]))
+    #ax2.set(title="results", xlim=(mins[0], maxs[0]), ylim=(mins[1], maxs[1]))
+    ax2.set(xlim=(mins[0], maxs[0]), ylim=(mins[1], maxs[1]))
     ax2.axis("equal")
     ax2.grid()
 
     # %% Consistency
 
     # NIS
+    '''
     insideCI = (CInorm[:N, 0] <= NISnorm[:N]) * (NISnorm[:N] <= CInorm[:N, 1])
 
     fig3, ax3 = plt.subplots(num=3, clear=True)
@@ -236,35 +256,44 @@ def main():
     ax3.plot(NISnorm[:N], lw=0.5)
 
     ax3.set_title(f'NIS, {insideCI.mean()*100}% inside CI')
+    '''
+    insideCI = (CI[:N, 0] <= NIS[:N]) * (NIS[:N] <= CI[:N, 1])
 
+    fig3, ax3 = plt.subplots(num=3, clear=True)
+    ax3.plot(CI[:N, 0], '--')
+    ax3.plot(CI[:N, 1], '--')
+    ax3.plot(NIS[:N], lw=0.5)
+
+    ax3.set_title(f'NIS, {round(insideCI.mean()*100,4)}% inside CI')
+    
     # NEES
 
     fig4, ax4 = plt.subplots(nrows=3, ncols=1, figsize=(
-        7, 5), num=4, clear=True, sharex=True)
+        5, 3.57), num=4, clear=True, sharex=True)
     tags = ['all', 'pos', 'heading']
     dfs = [3, 2, 1]
 
     for ax, tag, NEES, df in zip(ax4, tags, NEESes.T, dfs):
-        CI_NEES = chi2.interval(alpha, df)
+        CI_NEES = chi2.interval(confidence_prob, df)
         ax.plot(np.full(N, CI_NEES[0]), '--')
         ax.plot(np.full(N, CI_NEES[1]), '--')
         ax.plot(NEES[:N], lw=0.5)
         insideCI = (CI_NEES[0] <= NEES) * (NEES <= CI_NEES[1])
         ax.set_title(f'NEES {tag}: {insideCI.mean()*100}% inside CI')
 
-        CI_ANEES = np.array(chi2.interval(alpha, df*N)) / N
+        CI_ANEES = np.array(chi2.interval(confidence_prob, df*N)) / N
         print(f"CI ANEES {tag}: {CI_ANEES}")
         print(f"ANEES {tag}: {NEES.mean()}")
 
     fig4.tight_layout()
 
-    # %% RMSE
+    #RMSE
 
     ylabels = ['m', 'deg']
     scalings = np.array([1, 180/np.pi])
 
     fig5, ax5 = plt.subplots(nrows=2, ncols=1, figsize=(
-        7, 5), num=5, clear=True, sharex=True)
+        5, 3.57), num=5, clear=True, sharex=True)
 
     pos_err = np.linalg.norm(pose_est[:N, :2] - poseGT[:N, :2], axis=1)
     heading_err = np.abs(utils.wrapToPi(pose_est[:N, 2] - poseGT[:N, 2]))
@@ -274,11 +303,20 @@ def main():
     for ax, err, tag, ylabel, scaling in zip(ax5, errs, tags[1:], ylabels, scalings):
         ax.plot(err*scaling)
         ax.set_title(
-            f"{tag}: RMSE {np.sqrt((err**2).mean())*scaling} {ylabel}")
+            f"{tag}: RMSE {round(np.sqrt((err**2).mean())*scaling,4)} {ylabel}")
         ax.set_ylabel(f"[{ylabel}]")
         ax.grid()
 
     fig5.tight_layout()
+
+    #ANIS
+    valid_NIS = ~np.isnan(NISes)
+    NISes = NISes[valid_NIS]
+    CI_ANIS = np.array(chi2.interval(confidence_prob, num_asso_sum * 2)) / NISes.size
+    ANIS = NISes.mean()
+    print(f"CI ANIS {CI_ANIS}")
+    print(f"ANIS {ANIS}")
+
 
     # %% Movie time
 
@@ -322,6 +360,7 @@ def main():
             print(
                 "Install celluloid module, \n\n$ pip install celluloid\n\nto get fancy animation of EKFSLAM."
             )
+
 
     plt.show()
     # %%
