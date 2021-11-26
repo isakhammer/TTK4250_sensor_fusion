@@ -123,10 +123,10 @@ def main():
     CorrCoeff = np.array([[1, 0, 0], [0, 1, 0.9], [0, 0.9, 1]])
     Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
 
-    #R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # Original TODO tune
+    R = np.diag([0.1, 1 * np.pi / 180]) ** 2  # Original TODO tune
     #R = np.diag([0.065, 1 * np.pi / 210]) ** 2  # Giving the bias tuning TODO tune
     #R = np.diag([0.08, 1 * np.pi / 210]) ** 2  # Best tuning TODO tune
-    R = 10 * np.diag([0.1, 1 * np.pi / 180]) ** 2  # Good error, shit consistency tuning TODO tune
+    #R = 10 * np.diag([0.1, 1 * np.pi / 180]) ** 2  # Good error, shit consistency tuning TODO tune
 
     # first is for joint compatibility, second is individual
     JCBBalphas = np.array([1e-5, 1e-6])  # Original TODO tune
